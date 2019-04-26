@@ -1,0 +1,27 @@
+﻿  GL_model.c
+c:\users\lenovo\desktop\panther\gl_model.c(325): warning C4018: "<": niezgodność typu ze znakiem/bez znaku
+c:\users\lenovo\desktop\panther\gl_model.c(695): warning C4305: "=": obcięcie z "double" do "float"
+c:\users\lenovo\desktop\panther\gl_model.c(696): warning C4305: "=": obcięcie z "double" do "float"
+c:\users\lenovo\desktop\panther\gl_model.c(699): warning C4244: "funkcja": konwersja z "int" do "GLfloat", możliwa utrata danych
+c:\users\lenovo\desktop\panther\gl_model.c(700): warning C4244: "funkcja": konwersja z "int" do "GLfloat", możliwa utrata danych
+c:\users\lenovo\desktop\panther\gl_model.c(701): warning C4244: "funkcja": konwersja z "int" do "GLfloat", możliwa utrata danych
+c:\users\lenovo\desktop\panther\gl_model.c(702): warning C4244: "funkcja": konwersja z "int" do "GLfloat", możliwa utrata danych
+c:\users\lenovo\desktop\panther\gl_model.c(704): warning C4244: "funkcja": konwersja z "int" do "GLfloat", możliwa utrata danych
+c:\users\lenovo\desktop\panther\gl_model.c(705): warning C4244: "funkcja": konwersja z "int" do "GLfloat", możliwa utrata danych
+c:\users\lenovo\desktop\panther\gl_model.c(706): warning C4244: "funkcja": konwersja z "int" do "GLfloat", możliwa utrata danych
+c:\users\lenovo\desktop\panther\gl_model.c(707): warning C4244: "funkcja": konwersja z "int" do "GLfloat", możliwa utrata danych
+c:\users\lenovo\desktop\panther\gl_model.c(709): warning C4244: "funkcja": konwersja z "int" do "GLfloat", możliwa utrata danych
+c:\users\lenovo\desktop\panther\gl_model.c(710): warning C4244: "funkcja": konwersja z "int" do "GLfloat", możliwa utrata danych
+c:\users\lenovo\desktop\panther\gl_model.c(711): warning C4244: "funkcja": konwersja z "int" do "GLfloat", możliwa utrata danych
+c:\users\lenovo\desktop\panther\gl_model.c(712): warning C4244: "funkcja": konwersja z "int" do "GLfloat", możliwa utrata danych
+c:\users\lenovo\desktop\panther\gl_model.c(714): warning C4244: "funkcja": konwersja z "int" do "GLfloat", możliwa utrata danych
+c:\users\lenovo\desktop\panther\gl_model.c(715): warning C4244: "funkcja": konwersja z "int" do "GLfloat", możliwa utrata danych
+c:\users\lenovo\desktop\panther\gl_model.c(716): warning C4244: "funkcja": konwersja z "int" do "GLfloat", możliwa utrata danych
+c:\users\lenovo\desktop\panther\gl_model.c(717): warning C4244: "funkcja": konwersja z "int" do "GLfloat", możliwa utrata danych
+c:\users\lenovo\desktop\panther\gl_model.c(721): warning C4244: "=": konwersja z "double" do "float", możliwa utrata danych
+c:\users\lenovo\desktop\panther\gl_model.c(726): warning C4244: "=": konwersja z "double" do "float", możliwa utrata danych
+c:\users\lenovo\desktop\panther\gl_model.c(690): warning C4244: "inicjowanie": konwersja z "double" do "float", możliwa utrata danych
+c:\users\lenovo\desktop\panther\gl_model.c(690): warning C4305: "inicjowanie": obcięcie z "double" do "float"
+c:\users\lenovo\desktop\panther\gl_model.c(1254): warning C4244: "=": konwersja z "int" do "GLfloat", możliwa utrata danych
+c:\users\lenovo\desktop\panther\gl_model.c(1255): warning C4244: "=": konwersja z "int" do "GLfloat", możliwa utrata danych
+  Panther.vcxproj -> C:\Users\Lenovo\Desktop\Panther\Debug\Panther.exe
