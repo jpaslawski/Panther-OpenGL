@@ -60,7 +60,6 @@ unsigned int		texture[2];			// obiekt tekstury
 //Obrót poszczególnych czêœci czo³gu
 float obrotWieza = 0;
 float ruchLufa = 0;
-float ruchJarzmo = 0;
 
 // Declaration for Window procedure
 LRESULT CALLBACK WndProc(HWND    hWnd,
@@ -334,6 +333,36 @@ unsigned char *LoadBitmapFile(char *filename, BITMAPINFOHEADER *bitmapInfoHeader
 	return bitmapImage;
 }
 
+void sruba(float x, float y, float z, float r, float h, double color)
+{
+	double x1, z1, alpha, PI = 3.14;
+	if (y < 0) h = -h;
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	{
+		glBegin(GL_TRIANGLE_FAN);
+		glColor3d(color, color, color);
+		glVertex3d(x, y + h, z);
+		for (alpha = 0; alpha <= 8 * PI; alpha += PI / 8.0)
+		{
+			x1 = r * sin(alpha) + x;
+			z1 = r * cos(alpha) + z;
+			glVertex3d(x1, y + h, z1);
+		}
+		glEnd();
+
+		glBegin(GL_QUAD_STRIP);
+		glColor3d(color - 0.1, color - 0.1, color - 0.1);
+		for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
+		{
+			x1 = r * sin(alpha) + x;
+			z1 = r * cos(alpha) + z;
+			glVertex3d(x1, y, z1);
+			glVertex3d(x1, y + h, z1);
+		}
+		glEnd();
+	}
+}
+
 void wieza(void)
 {
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -372,6 +401,8 @@ void wieza(void)
 		glVertex3d(-28, 44, 44);
 		glVertex3d(-28, -44, 44);
 		glEnd();
+
+
 	}
 }
 
@@ -606,7 +637,7 @@ void kadlub(void)
 		glVertex3d(-95.5, -60.5, 6);
 		glVertex3d(-126, -76.5, -16.5);
 		//ty³
-		glColor3d(0.2, 0.3, 0.2);
+		glColor3d(0.6, 0.1, 0);
 		glVertex3d(139, -44, -16.5);
 		glVertex3d(112, -44, -57.5);
 		glVertex3d(112, 44, -57.5);
@@ -645,9 +676,28 @@ void kadlub(void)
 	}
 }
 
+void blachaBoczna(float y)
+{
+	int a = 0;
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	{
+		glBegin(GL_QUAD_STRIP);
+		for (float x1 = -126.0; x1 <= 141.0; x1 += 12.0)
+		{
+			if (a % 2 == 0) { glColor3d(0.3, 0.5, 0); }
+			else { glColor3d(0.25, 0.1, 0); }
+			glVertex3f(x1, y, -36.5);
+			glVertex3f(x1, y, -16.5);
+			a++;
+		}
+		glEnd();
+	}
+}
+
 void kolo(double x, double y, double z)
 {
-	double x1, z1, alpha, PI = 3.14;
+	double x1, x2, x3, z1, z2, z3, alpha, PI = 3.14, h = 5;
+	if (y < 0) h = -5;
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	{
 		glBegin(GL_TRIANGLE_FAN);
@@ -667,159 +717,232 @@ void kolo(double x, double y, double z)
 		{
 			x1 = 21 * sin(alpha) + x;
 			z1 = 21 * cos(alpha) + z;
-			glVertex3d(x1, y - 5, z1);
+			glVertex3d(x1, y - h, z1);
 			glVertex3d(x1, y, z1);
 		}
 		glEnd();
+
+		sruba(x, y, z, 8, 1, 0.6);
+		for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
+		{
+			//sruby zewnetrzne 
+			x2 = 19 * sin(alpha) + x;
+			z2 = 19 * cos(alpha) + z;
+			sruba(x2, y, z2, 1, 1, 0.7);
+			
+			//sruby wewnetrzne
+			x3 = 6 * sin(alpha) + x;
+			z3 = 6 * cos(alpha) + z;
+			sruba(x3, y, z3, 1, 2, 0.2);
+		}
 	}
 }
 
-void gasienice(void)
+void gasienicaGorna(float y)
 {
-	kolo(-137, 76.5, -36.5);
-	kolo(-101.5, 71.5, -50.5);
-	kolo(-74, 76.5, -50.5);
-	kolo(-48, 71.5, -50.5);
-	kolo(-21.5, 76.5, -50.5);
-	kolo(6, 71.5, -50.5);
-	kolo(34, 76.5, -50.5);
-	kolo(60, 71.5, -50.5);
-	kolo(86, 76.5, -50.5);
-	kolo(114, 71.5, -40.5);
-	
-	float z = -15.5, z_war = z - 0.5, color = 0.1; 
+	float z = -16.5,  color = 0.1;
 	int a = 0;
-	for (int i = -150; i <= 130; i+= 8)
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	{
-		glBegin(GL_QUADS);
-		if (a % 2 == 0) { color = 0.2; }
-		else { color = 0.7; }
-		glColor3d(color, color, color);
-	    // lewa góra  
-		glVertex3f(i, -80, z);
-		glVertex3f(i, -52, z);
-		glVertex3f(i + 8, -52, z_war);
-		glVertex3f(i + 8, -80, z_war);
-		//lewy dó³
-		glVertex3f(i, -80, z - 46);
-		glVertex3f(i, -52, z - 46);
-		glVertex3f(i + 8, -52, z_war - 46);
-		glVertex3f(i + 8, -80, z_war - 46);
-		//prawa góra
-		glVertex3f(i, 80, z);
-		glVertex3f(i, 52, z);
-		glVertex3f(i + 8, 52, z_war);
-		glVertex3f(i + 8, 80, z_war);
-		//prawy dó³
-		glVertex3f(i, 80, z - 46);
-		glVertex3f(i, 52, z - 46);
-		glVertex3f(i + 8, 52, z_war - 46);
-		glVertex3f(i + 8, 80, z_war - 46);
-		if (i < -120)
+		glBegin(GL_QUAD_STRIP);
+		for (float x1 = -130.0; x1 <= 110.0; x1 += 5.0)
 		{
-			z -= 1.5;
-			z_war = z - 0.5;
+			if (a % 2 == 0) { color = 0.2; }
+			else { color = 0.7; }
+			glColor3d(color, color, color);
+			glVertex3f(x1, y, z);
+			glVertex3f(x1, y + 28, z);
+
+			if (x1 < -121.0)
+			{
+				z -= 1.5;
+			}
+			else if (x1 > 101.0)
+			{
+				z += 1.5;
+			}
+			else if(x1 > -121.0 && x1 < -81.0)
+			{
+				z -= 0.8;
+			}
+			else if (x1 > -81.0 && x1 < -41.0)
+			{
+				z -= 0.4;
+			}
+			else if (x1 > 21.0 && x1 < 61.0)
+			{
+				z += 0.4;
+			}
+			else if (x1 > 61.0 && x1 < 101.0)
+			{
+				z += 0.9;
+			}
+			a++;
 		}
-		else if (i > 70)
-		{
-			z += 1.5;
-			z_war = z + 0.5;
-		}
-		else if (i > -120 && z < 70)
-		{
-			z = -25.5;
-			z_war = z;
-		}
-		a++;
 		glEnd();
 	}
-	kolo(-137, -76.5, -36.5);
-	kolo(-101.5, -71.5, -50.5);
-	kolo(-74, -76.5, -50.5);
-	kolo(-48, -71.5, -50.5);
-	kolo(-21.5, -76.5, -50.5);
-	kolo(6, -71.5, -50.5);
-	kolo(34, -76.5, -50.5);
-	kolo(60, -71.5, -50.5);
-	kolo(86, -76.5, -50.5);
-	kolo(114, -71.5, -40.5);
 }
 
-void wydech(void)
+void gasienicaDolna(float y)
 {
-	/*double x, y, z, alpha, PI = 3.14;
+	float x, z = -56.5, color = 0.1;
+	int a = 0;
+	double alpha, PI = 3.14;
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	{
+		glBegin(GL_QUAD_STRIP);
+		for (float x1 = -145.0; x1 <= 128.0; x1 += 5.0)
+		{
+			if (a % 2 == 0) { color = 0.2; }
+			else { color = 0.7; }
+			glColor3d(color, color, color);
+			glVertex3f(x1, y, z);
+			glVertex3f(x1, y + 28, z);
+
+			if (x1 <= -130.0)
+			{
+				z -= 2.5;
+			}
+			else if (x1 >= 110.0)
+			{
+				z += 3;
+			}
+			else if (x1 > -130.0 && x1 < -105.0)
+			{
+				z -= 1.5;
+			}
+			else if (x1 > 85.0 && x1 < 110.0)
+			{
+				z += 1.7;
+			}
+			a++;
+		}
+		glEnd();
+
+		//przednie zaokr¹glenie
+		glBegin(GL_QUAD_STRIP);
+		for (alpha = -PI + PI / 14.0; alpha <= PI / 7.0; alpha += PI / 14.0)
+		{
+			if (a % 2 == 0) { color = 0.2; }
+			else { color = 0.7; }
+			glColor3d(color, color, color);
+			x = 21.5 * sin(alpha) - 137;
+			z = 21.5 * cos(alpha) - 36.5;
+			glVertex3d(x, y, z);
+			glVertex3d(x, y + 28, z);
+			a++;
+		}
+		glEnd();
+
+		//tylne zaokr¹glenie
+		glBegin(GL_QUAD_STRIP);
+		for (alpha = - PI / 14.0; alpha <= PI - PI / 14.0; alpha += PI / 14.0)
+		{
+			if (a % 2 == 0) { color = 0.2; }
+			else { color = 0.7; }
+			glColor3d(color, color, color);
+			x = 21.5 * sin(alpha) + 114;
+			z = 21.5 * cos(alpha) - 38.5;
+			glVertex3d(x, y, z);
+			glVertex3d(x, y + 28, z);
+			a++;
+		}
+		glEnd();
+	}
+}
+
+void ukladGasienicowy(void)
+{
+	kolo(-137, 74.5, -36.5);
+	kolo(-101.5, 69.5, -50.5);
+	kolo(-74, 74.5, -50.5);
+	kolo(-48, 69.5, -50.5);
+	kolo(-21.5, 74.5, -50.5);
+	kolo(6, 69.5, -50.5);
+	kolo(34, 74.5, -50.5);
+	kolo(60, 69.5, -50.5);
+	kolo(86, 74.5, -50.5);
+	kolo(114, 69.5, -38.5);
+	
+	gasienicaGorna(-70);
+	gasienicaDolna(-70);
+	gasienicaGorna(42);
+	gasienicaDolna(42);
+
+	kolo(-137, -74.5, -36.5);
+	kolo(-101.5, -69.5, -50.5);
+	kolo(-74, -74.5, -50.5);
+	kolo(-48, -69.5, -50.5);
+	kolo(-21.5, -74.5, -50.5);
+	kolo(6, -69.5, -50.5);
+	kolo(34, -74.5, -50.5);
+	kolo(60, -69.5, -50.5);
+	kolo(86, -74.5, -50.5);
+	kolo(114, -69.5, -38.5);
+}
+
+void wydech(float r1, float r2, float h1, float h2)
+{
+	double x1, y1, alpha, PI = 3.14;
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	{
 		glBegin(GL_TRIANGLE_FAN);
-		glColor3d(0.1, 0, 0);
-		glVertex3d(-95.5, 20, 6);
+		glColor3d(0, 0, 0);
+		glVertex3d(0, 0, 0);
 		for (alpha = 0; alpha <= 8 * PI; alpha += PI / 8.0)
 		{
-			x = 10 * sin(alpha);
-			y = 10 * cos(alpha);
-			glVertex3d(x, y, 0);
+			x1 = r1 * sin(alpha);
+			y1 = r1 * cos(alpha);
+			glVertex3d(x1, y1, 0);
 		}
 		glEnd();
 
 		glBegin(GL_QUAD_STRIP);
 		glColor3d(0.2, 0.1, 0);
-		for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
+		for (alpha = 0.0; alpha <= PI; alpha += PI / 8.0)
 		{
-			x = 10 * sin(alpha);
-			y = 10 * cos(alpha);
-			glVertex3d(x, y, 0);
-			glVertex3d(x, y, h);
+			x1 = r1 * sin(alpha);
+			y1 = r1 * cos(alpha);
+			glVertex3d(x1, y1, 0);
+			glVertex3d(x1, y1, h1);
 		}
 		glEnd();
 
 		glBegin(GL_TRIANGLE_FAN);
-		glColor3d(0.1, 0, 0);
-		glVertex3d(0, 0, h);
-		for (alpha = 0; alpha >= -2 * PI; alpha -= PI / 8.0)
+		glColor3d(0, 0, 0);
+		glVertex3d(4, 0, 0);
+		for (alpha = 0; alpha <= 8 * PI; alpha += PI / 8.0)
 		{
-			x = 10 * sin(alpha);
-			y = 10 * cos(alpha);
-			glVertex3d(x, y, h);
+			x1 = r2 * sin(alpha) + 4;
+			y1 = r2 * cos(alpha);
+			glVertex3d(x1, y1, 0);
 		}
 		glEnd();
-	}*/
-}
-void walec(double r, double h)
-{
-	double x, y, alpha, PI = 3.14;
-	glBegin(GL_TRIANGLE_FAN);
-	glColor3d(0.1, 0, 0);
-	glVertex3d(0, 0, 0);
-	for (alpha = 0; alpha <= 8 * PI; alpha += PI / 8.0)
-	{
-		x = r * sin(alpha);
-		y = r * cos(alpha);
-		glVertex3d(x, y, 0);
-	}
-	glEnd();
 
-	glBegin(GL_QUAD_STRIP);
-	glColor3d(0.2, 0.1, 0);
-	for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
-	{
-		x = r * sin(alpha);
-		y = r * cos(alpha);
-		glVertex3d(x, y, 0);
-		glVertex3d(x, y, h);
-	}
-	glEnd();
+		glBegin(GL_QUAD_STRIP);
+		glColor3d(0.2, 0.1, 0);
+		for (alpha = 0.0; alpha <= 2*PI; alpha += PI / 8.0)
+		{
+			x1 = r2 * sin(alpha) + 4;
+			y1 = r2 * cos(alpha);
+			glVertex3d(x1, y1, 0);
+			glVertex3d(x1, y1, h2);
+		}
+		glEnd();
 
-	glBegin(GL_TRIANGLE_FAN);
-	glColor3d(0.1, 0, 0);
-	glVertex3d(0, 0, h);
-	for (alpha = 0; alpha >= -2 * PI; alpha -= PI / 8.0)
-	{
-		x = r * sin(alpha);
-		y = r * cos(alpha);
-		glVertex3d(x, y, h);
+		glBegin(GL_TRIANGLE_FAN);
+		glColor3d(0, 0, 0);
+		glVertex3d(4, 0, h2);
+		for (alpha = 0; alpha <= 8 * PI; alpha += PI / 8.0)
+		{
+			x1 = r2 * sin(alpha) + 4;
+			y1 = r2 * cos(alpha);
+			glVertex3d(x1, y1, h2);
+		}
+		glEnd();
 	}
-	glEnd();
 }
+
 
 void stozek(double r, double h)
 {
@@ -859,7 +982,7 @@ void RenderScene(void)
 	// Save the matrix state and do the rotations
 	glPushMatrix();
 	glRotatef(xRot, 1.0f, 0.0f, 0.0f);
-	glRotatef(yRot, 0.0f, 1.0f, 0.0f);
+	glRotatef(yRot, 0.0f, 0.0f, 1.0f);
 	/////////////////////////////////////////////////////////////////
 	// MIEJSCE NA KOD OPENGL DO TWORZENIA WLASNYCH SCEN:		   //
 	/////////////////////////////////////////////////////////////////
@@ -879,7 +1002,16 @@ void RenderScene(void)
 		glPopMatrix();
 	glPopMatrix();
 	kadlub();
-	gasienice();
+	blachaBoczna(-76.5);
+	blachaBoczna(76.5);
+	ukladGasienicowy();
+		glPushMatrix();
+		glTranslatef(130, -18, -28);
+		glRotatef( 34, 0, 1, 0);
+		wydech(8, 3, 40, 50);
+		glTranslatef(0, 36, 0);
+		wydech(8, 3, 40, 50);
+		glPopMatrix();
 	glPopMatrix();
 	//Uzyskanie siatki:
 	//glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
@@ -1236,23 +1368,53 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 			yRot += 3.0f;
 
 		if (wParam == VK_F1)
-			obrotWieza += 3.0f;
+		{
+			if (ruchLufa < -6.0f && obrotWieza > 150.0f && obrotWieza < 210.0f)
+			{
+				ruchLufa = -6.0f;
+			}
+			else if(ruchLufa < -6.0f && obrotWieza < -150.0f && obrotWieza > -210.0f)
+			{
+				ruchLufa = -6.0f;
+			}
+			else
+				obrotWieza += 3.0f;
+		}
 
 		if (wParam == VK_F2)
-			obrotWieza -= 3.0f;
+		{
+			if (ruchLufa < -6.0f && obrotWieza < -150.0f && obrotWieza > -210.0f)
+			{
+				ruchLufa = -6.0f;
+			}
+			else if (ruchLufa < -6.0f && obrotWieza > 150.0f && obrotWieza < 210.0f)
+			{
+				ruchLufa = -6.0f;
+			}
+			else
+				obrotWieza -= 3.0f;
+		}
 
 		if (wParam == VK_F3 && ruchLufa <= 12.0f)
-		{
 			ruchLufa += 1.0f;
-			ruchJarzmo += 0.01f;
-		}
+	
 		if (wParam == VK_F4 && ruchLufa >= -8.0f)
 		{
-			ruchLufa -= 1.0f;
-			ruchJarzmo -= 0.01f;
+			if (ruchLufa <= -6.0f && obrotWieza < -150.0f && obrotWieza > -210.0f)
+			{
+				ruchLufa = -6.0f;
+			}
+			else if (ruchLufa <= -6.0f && obrotWieza > 150.0f && obrotWieza < 210.0f)
+			{
+				ruchLufa = -6.0f;
+			}
+			else
+				ruchLufa -= 1.0f;
 		}
+		
 		xRot = (const int)xRot % 360;
 		yRot = (const int)yRot % 360;
+		obrotWieza = (const int)obrotWieza % 360;
 
 		InvalidateRect(hWnd, NULL, FALSE);
 	}
