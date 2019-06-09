@@ -58,14 +58,16 @@ static GLsizei lastWidth;
 // Opis tekstury
 BITMAPINFOHEADER	bitmapInfoHeader;	// nag³ówek obrazu
 unsigned char*		bitmapData;			// dane tekstury
-unsigned int		texture[9];			// obiekt tekstury
+unsigned int		texture[20];			// obiekt tekstury
 
 //Obrót poszczególnych czêœci czo³gu
 float obrotWieza = 0;
 float ruchLufa = 0;
 float ruchCzolg = 0;
+float obrotKoloLewe = 0;
+float obrotKoloPrawe = 0;
 float skret = 0;
-float zoom = 0.5;
+float zoom = 0.4;
 
 
 // Declaration for Window procedure
@@ -516,27 +518,26 @@ void jarzmo(void)
 {
 	double x, x_next, z, z_next, alpha, PI = 3.14;
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glColor3d(1, 1, 1);
+	glColor3d(0.6, 0.6, 0.6);
 	glEnable(GL_TEXTURE_2D); // W³¹cz teksturowanie
 	glBindTexture(GL_TEXTURE_2D, texture[2]);
 	glBegin(GL_QUAD_STRIP);
-	for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
+	for (alpha = 4 * PI / 8.0; alpha <= 11 * PI / 8.0; alpha += PI / 8.0)
 	{
 		z = 16.5 * sin(alpha) + 27.5;
 		x = 16.5 * cos(alpha) - 31;
-		x_next = 16.5 * sin(alpha + PI / 8.0) + 31.25;
-		z_next = 16.5 * cos(alpha + PI / 8.0) + 15.5;
+		x_next = 16.5 * cos(alpha + PI / 8.0) - 31;
+		z_next = 16.5 * sin(alpha + PI / 8.0) + 27.5;
 
-		glTexCoord2d(1.0, 1.0); glVertex3d(x_next, -44, z_next);
-		glTexCoord2d(0.0, 1.0); glVertex3d(x_next, -44, z_next);
-		glTexCoord2d(0.0, 0.0); glVertex3d(x, -44, z);
-		glTexCoord2d(1.0, 0.0); glVertex3d(x, -44, z);
+		glTexCoord2d(0.0, 0.0); glVertex3d(x_next, 44, z_next);
+		glTexCoord2d(1.0, 0.0); glVertex3d(x_next, -44, z_next);
+		glTexCoord2d(1.0, 1.0); glVertex3d(x, -44, z);
+		glTexCoord2d(0.0, 1.0); glVertex3d(x, 44, z);
 	}
 	glEnd();
-	glDisable(GL_TEXTURE_2D); // Wy³¹cz teksturowanie
 
+	glColor3d(0.3, 0.3, 0.3);
 	glBegin(GL_TRIANGLE_FAN);
-	glColor3d(0.1, 0.1, 0.1);
 	for (alpha = 0; alpha >= -2 * PI; alpha -= PI / 8.0)
 	{
 		z = 16.5 * cos(alpha) + 27.5;
@@ -550,125 +551,140 @@ void jarzmo(void)
 	}
 	glEnd();
 
-
 	glBegin(GL_TRIANGLE_FAN);
-	glColor3d(0.1, 0.1, 0.1);
-	glVertex3d(-31, 44, 27.5);
 	for (alpha = 0; alpha >= -2 * PI; alpha -= PI / 8.0)
 	{
-		z = 16.5 * sin(alpha) + 27.5;
-		x = 16.5 * cos(alpha) - 31;
-		glVertex3d(x, 44, z);
+		z = 16.5 * cos(alpha) + 27.5;
+		x = 16.5 * sin(alpha) - 31;
+		z_next = 16.5 * cos(alpha - PI / 8.0) + 27.5;
+		x_next = 16.5 * sin(alpha - PI / 8.0) - 31;
+
+		glTexCoord2d(0.5, 1.0); glVertex3d(-31, 44, 27.5);
+		glTexCoord2d(0.0, 0.0); glVertex3d(x_next, 44, z_next);
+		glTexCoord2d(1.0, 0.0); glVertex3d(x, 44, z);
 	}
 	glEnd();
-	
+	glDisable(GL_TEXTURE_2D); // Wy³¹cz teksturowanie
 }
 
 void lufa(void)
 {
 	double x, x_next, y, y_next, z, z_next, alpha, PI = 3.14;
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glColor3d(0.5, 0.5, 0.5);
+
+	//lufa
+	glColor3d(1, 1, 1);
 	glEnable(GL_TEXTURE_2D); // W³¹cz teksturowanie
-	glBindTexture(GL_TEXTURE_2D, texture[2]);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glBindTexture(GL_TEXTURE_2D, texture[6]);
+	glBegin(GL_QUADS);
+	for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
 	{
-		glBegin(GL_TRIANGLE_FAN);
-		glVertex3d(0, -43, 0);
-		for (alpha = 0 * PI / 8.0; alpha >= -7 * PI / 8.0; alpha -= PI / 8.0)
-		{
-			z = 22.5 * cos(alpha);
-			x = 22.5 * sin(alpha);
-			glVertex3d(x, -43, z);
-		}
-		glEnd();
+		y = 4.5 * sin(alpha);
+		z = 4.5 * cos(alpha);
+		y_next = 4.5 * sin(alpha + PI / 8.0);
+		z_next = 4.5 * cos(alpha + PI / 8.0);
 
-		glBegin(GL_QUAD_STRIP);
-		for (alpha = 4 * PI / 8.0; alpha <= 11 * PI / 8.; alpha += PI / 8.0)
-		{
-			z = 22.5 * sin(alpha);
-			x = 22.5 * cos(alpha);
-			x_next = 22.5 * cos(alpha + PI / 8.0);
-			z_next = 22.5 * sin(alpha + PI / 8.0);
-
-			glTexCoord2d(0.0, 0.0); glVertex3d(x_next, 43, z_next);
-			glTexCoord2d(1.0, 0.0); glVertex3d(x_next, -43, z_next); 
-			glTexCoord2d(1.0, 1.0); glVertex3d(x, -43, z);
-			glTexCoord2d(0.0, 1.0); glVertex3d(x, 43, z);
-		}
-		glEnd();
-
-		glBegin(GL_TRIANGLE_FAN);
-		glVertex3d(0, 43, 0);
-		for (alpha = 11 * PI / 8.0; alpha >= 3 * PI / 8.0; alpha -= PI / 8.0)
-		{
-			z = 22.5 * sin(alpha);
-			x = 22.5 * cos(alpha);
-			glVertex3d(x, 43, z);
-		}
-		glEnd();
-
-		glColor3d(1, 1, 1);
-		glBindTexture(GL_TEXTURE_2D, texture[6]);
-		glBegin(GL_QUADS);
-		for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
-		{
-			y = 4.5 * sin(alpha);
-			z = 4.5 * cos(alpha);
-			y_next = 4.5 * sin(alpha + PI / 8.0);
-			z_next = 4.5 * cos(alpha + PI / 8.0);
-
-			glTexCoord2d(0.0, 0.0); glVertex3d(-160, y, z);
-			glTexCoord2d(1.0, 0.0); glVertex3d(0, y, z); 
-			glTexCoord2d(1.0, 1.0); glVertex3d(0, y_next, z_next);
-			glTexCoord2d(0.0, 1.0); glVertex3d(-160, y_next, z_next);
-		}
-		glEnd();
-		//zakoñczenie
-		glBegin(GL_TRIANGLE_FAN);
-		glColor3d(0.7, 0.7, 0.7);
-		glVertex3d(-157, 0, 0);
-		for (alpha = 0; alpha <= 8 * PI; alpha += PI / 8.0)
-		{
-			z = 5 * sin(alpha);
-			y = 5 * cos(alpha);
-			glVertex3d(-157, y, z);
-		}
-		glEnd();
-
-		glBegin(GL_QUAD_STRIP);
-		glColor3d(0.7, 0.7, 0.7);
-		for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
-		{
-			z = 7 * sin(alpha);
-			y = 7 * cos(alpha);
-			glVertex3d(-110, 0, 0);
-			glVertex3d(-158, y, z);
-		}
-		glEnd();
-
-		glBegin(GL_QUAD_STRIP);
-		glColor3d(0.3, 0.3, 0.3);
-		for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
-		{
-			z = 7 * sin(alpha);
-			y = 7 * cos(alpha);
-			glVertex3d(-158, y, z);
-			glVertex3d(-159, y, z);
-		}
-		glEnd();
-
-		glBegin(GL_QUAD_STRIP);
-		glColor3d(0.3, 0.3, 0.3);
-		for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
-		{
-			z = 5.5 * sin(alpha);
-			y = 5.5 * cos(alpha);
-			glVertex3d(-159, y, z);
-			glVertex3d(-166, y, z);
-		}
-		glEnd();
+		glTexCoord2d(0.0, 0.0); glVertex3d(0, y, z); 
+		glTexCoord2d(1.0, 0.0); glVertex3d(-160, y, z);
+		glTexCoord2d(1.0, 1.0); glVertex3d(-160, y_next, z_next);
+		glTexCoord2d(0.0, 1.0); glVertex3d(0, y_next, z_next); 
 	}
+	glEnd();
+
+	//jarzmo zewnêtrzne
+	glColor3d(0.5, 0.5, 0.5);
+	glBindTexture(GL_TEXTURE_2D, texture[2]);
+	glBegin(GL_TRIANGLE_FAN);
+	for (alpha = 0; alpha >= -7 * PI / 8.0; alpha -= PI / 8.0)
+	{
+		z = 22.5 * cos(alpha);
+		x = 22.5 * sin(alpha);
+		z_next = 22.5 * cos(alpha - PI / 8.0);
+		x_next = 22.5 * sin(alpha - PI / 8.0);
+
+		glTexCoord2d(0.5, 1.0); glVertex3d(0, -43, 0);
+		glTexCoord2d(0.0, 0.0); glVertex3d(x_next, -43, z_next);
+		glTexCoord2d(1.0, 0.0); glVertex3d(x, -43, z);
+	}
+	glEnd();
+
+	glBegin(GL_TRIANGLE_FAN);
+	for (alpha = 0 * PI / 8.0; alpha >= -7 * PI / 8.0; alpha -= PI / 8.0)
+	{
+		z = 22.5 * cos(alpha);
+		x = 22.5 * sin(alpha);
+		z_next = 22.5 * cos(alpha - PI / 8.0);
+		x_next = 22.5 * sin(alpha - PI / 8.0);
+
+		glTexCoord2d(0.5, 1.0); glVertex3d(0, 43, 0);
+		glTexCoord2d(0.0, 0.0); glVertex3d(x, 43, z);
+		glTexCoord2d(1.0, 0.0); glVertex3d(x_next, 43, z_next);
+	}
+	glEnd();
+
+	glBegin(GL_QUAD_STRIP);
+	for (alpha = 4 * PI / 8.0; alpha <= 11 * PI / 8.0; alpha += PI / 8.0)
+	{
+		z = 22.5 * sin(alpha);
+		x = 22.5 * cos(alpha);
+		x_next = 22.5 * cos(alpha + PI / 8.0);
+		z_next = 22.5 * sin(alpha + PI / 8.0);
+
+		glTexCoord2d(0.0, 0.0); glVertex3d(x_next, 43, z_next);
+		glTexCoord2d(1.0, 0.0); glVertex3d(x_next, -43, z_next); 
+		glTexCoord2d(1.0, 1.0); glVertex3d(x, -43, z);
+		glTexCoord2d(0.0, 1.0); glVertex3d(x, 43, z);
+	}
+	glEnd();
+
+	glBegin(GL_QUADS);
+	glTexCoord2d(0.0, 0.0); glVertex3d(22.5 * cos(11 * PI / 8.0), 43, 22.5 * sin(11 * PI / 8.0));
+	glTexCoord2d(1.0, 0.0); glVertex3d(22.5 * cos(11 * PI / 8.0), -43, 22.5 * sin(11 * PI / 8.0));
+	glTexCoord2d(1.0, 1.0); glVertex3d(22.5 * cos(4 * PI / 8.0), -43, 22.5 * sin(4 * PI / 8.0));
+	glTexCoord2d(0.0, 1.0); glVertex3d(22.5 * cos(4 * PI / 8.0), 43, 22.5 * sin(4 * PI / 8.0));
+	glEnd;
+
+	glColor3d(0.3, 0.3, 0.3);
+	//zakoñczenie
+	glBegin(GL_TRIANGLE_FAN);
+	glVertex3d(-157, 0, 0);
+	for (alpha = 0; alpha <= 8 * PI; alpha += PI / 8.0)
+	{
+		z = 5 * sin(alpha);
+		y = 5 * cos(alpha);
+		glVertex3d(-157, y, z);
+	}
+	glEnd();
+
+	glBegin(GL_QUAD_STRIP);
+	for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
+	{
+		z = 7 * sin(alpha);
+		y = 7 * cos(alpha);
+		glVertex3d(-110, 0, 0);
+		glVertex3d(-158, y, z);
+	}
+	glEnd();
+
+	glBegin(GL_QUAD_STRIP);
+	for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
+	{
+		z = 7 * sin(alpha);
+		y = 7 * cos(alpha);
+			glVertex3d(-158, y, z);
+		glVertex3d(-159, y, z);
+	}
+	glEnd();
+
+	glBegin(GL_QUAD_STRIP);
+	for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
+	{
+		z = 5.5 * sin(alpha);
+		y = 5.5 * cos(alpha);
+		glVertex3d(-159, y, z);
+		glVertex3d(-166, y, z);
+	}
+	glEnd();
 	glDisable(GL_TEXTURE_2D); // Wy³¹cz teksturowanie
 }
 
@@ -686,7 +702,105 @@ void kadlub(void)
 	glTexCoord2d(1.0, 0.0); glVertex3d(154, -60.5, 6);
 	glEnd();
 
+	//prawy wentylator - ch³odzenie silnika
+	double x, x_next, y, y_next, x1, x1_next, y1, y1_next, alpha, PI = 3.14;
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glColor3d(1, 1, 1);
+	glBindTexture(GL_TEXTURE_2D, texture[1]);
+	glBegin(GL_QUAD_STRIP);
+	for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
+	{
+		x = 15 * sin(alpha) + 115;
+		y = 15 * cos(alpha) + 35;
+		x_next = 15 * sin(alpha + PI / 8.0) + 115;
+		y_next = 15 * cos(alpha + PI / 8.0) + 35;
+
+		x1 = 12 * sin(alpha) + 115;
+		y1 = 12 * cos(alpha) + 35;
+		x1_next = 12 * sin(alpha - PI / 8.0) + 115;
+		y1_next = 12 * cos(alpha - PI / 8.0) + 35;
+
+		glTexCoord2d(1.0, 1.0); glVertex3d(x1_next, y1_next, 10);
+		glTexCoord2d(0.0, 1.0); glVertex3d(x_next, y_next, 6);
+		glTexCoord2d(0.0, 0.0); glVertex3d(x, y, 6);
+		glTexCoord2d(1.0, 0.0); glVertex3d(x1, y1, 10);
+	}
+	glEnd();
+
+	//lewy wentylator - ch³odzenie silnika
+	glBegin(GL_QUAD_STRIP);
+	for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
+	{
+		x = 15 * sin(alpha) + 115;
+		y = 15 * cos(alpha) - 35;
+		x_next = 15 * sin(alpha + PI / 8.0) + 115;
+		y_next = 15 * cos(alpha + PI / 8.0) - 35;
+
+		x1 = 12 * sin(alpha) + 115;
+		y1 = 12 * cos(alpha) - 35;
+		x1_next = 12 * sin(alpha - PI / 8.0) + 115;
+		y1_next = 12 * cos(alpha - PI / 8.0) - 35;
+
+		glTexCoord2d(1.0, 1.0); glVertex3d(x1_next, y1_next, 10);
+		glTexCoord2d(0.0, 1.0); glVertex3d(x_next, y_next, 6);
+		glTexCoord2d(0.0, 0.0); glVertex3d(x, y, 6);
+		glTexCoord2d(1.0, 0.0); glVertex3d(x1, y1, 10);
+	}
+	glEnd();
+
+	//prawy wentylator - góra
+	glBindTexture(GL_TEXTURE_2D, texture[9]);
+	glBegin(GL_TRIANGLE_FAN);
+	for (alpha = 0; alpha >= -2 * PI; alpha -= PI / 8.0)
+	{
+		x = 12 * sin(alpha) + 115;
+		y = 12 * cos(alpha) + 35;
+		x_next = 12 * sin(alpha - PI / 8.0) + 115;
+		y_next = 12 * cos(alpha - PI / 8.0) + 35;
+
+		glTexCoord2d(0.5, 1.0); glVertex3d(115, 35, 10);
+		glTexCoord2d(0.0, 0.0); glVertex3d(x_next, y_next, 10);
+		glTexCoord2d(1.0, 0.0); glVertex3d(x, y, 10);
+	}
+	glEnd();
+
+	//lewy wentylator - góra
+	glBegin(GL_TRIANGLE_FAN);
+	for (alpha = 0; alpha >= -2 * PI; alpha -= PI / 8.0)
+	{
+		x = 12 * sin(alpha) + 115;
+		y = 12 * cos(alpha) - 35;
+		x_next = 12 * sin(alpha - PI / 8.0) + 115;
+		y_next = 12 * cos(alpha - PI / 8.0) - 35;
+
+		glTexCoord2d(0.5, 1.0); glVertex3d(115, -35, 10);
+		glTexCoord2d(0.0, 0.0); glVertex3d(x_next, y_next, 10);
+		glTexCoord2d(1.0, 0.0); glVertex3d(x, y, 10);
+	}
+	glEnd();
+
+	glBegin(GL_QUADS);
+	glTexCoord2d(1.0, 1.0); glVertex3d(135, -47, 7);
+	glTexCoord2d(0.0, 1.0); glVertex3d(135, -23, 7); 
+	glTexCoord2d(0.0, 0.0); glVertex3d(145, -23, 7);
+	glTexCoord2d(1.0, 0.0); glVertex3d(145, -47, 7); 
+
+	glTexCoord2d(1.0, 1.0); glVertex3d(135, 47, 7);
+	glTexCoord2d(0.0, 1.0); glVertex3d(135, 23, 7);
+	glTexCoord2d(0.0, 0.0); glVertex3d(145, 23, 7);
+	glTexCoord2d(1.0, 0.0); glVertex3d(145, 47, 7);
+
+	glTexCoord2d(1.0, 1.0); glVertex3d(85, -47, 7);
+	glTexCoord2d(0.0, 1.0); glVertex3d(85, -23, 7);
+	glTexCoord2d(0.0, 0.0); glVertex3d(95, -23, 7);
+	glTexCoord2d(1.0, 0.0); glVertex3d(95, -47, 7);
+
+	glTexCoord2d(1.0, 1.0); glVertex3d(85, 47, 7);
+	glTexCoord2d(0.0, 1.0); glVertex3d(85, 23, 7);
+	glTexCoord2d(0.0, 0.0); glVertex3d(95, 23, 7);
+	glTexCoord2d(1.0, 0.0); glVertex3d(95, 47, 7);
+	glEnd();
+	
 	glBindTexture(GL_TEXTURE_2D, texture[5]);
 	glBegin(GL_QUADS);
 
@@ -697,6 +811,7 @@ void kadlub(void)
     glTexCoord2d(1.0, 0.0); glVertex3d(-126, 44, -57.5);
 
 	//boki
+	glColor3d(1, 1, 1);
 	glTexCoord2d(1.0, 1.0); glVertex3d(154, -60.5, 6);
 	glTexCoord2d(0.0, 1.0); glVertex3d(154, 60.5, 6);
 	glTexCoord2d(0.0, 0.0); glVertex3d(139, 76.5, -16.5); 
@@ -787,7 +902,7 @@ void blachaBoczna(float y)
 
 void kolpak(double y)
 {
-	double x1, x2, x3, z1, z2, z3, alpha, PI = 3.14, h = 32.5;
+	/*double x1, x2, x3, z1, z2, z3, alpha, PI = 3.14, h = 32.5;
 	if (y < 0) h = -32.5;
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	{
@@ -819,10 +934,10 @@ void kolpak(double y)
 		glVertex3d(-112, y, -16.5);
 		glVertex3d(-112, y + h, -16.5);
 		glEnd();
-	}
+	}*/
 }
 
-void kolo(double x, double y, double z)
+void kolo(float y)
 {
 	double x1, x2, x3, z1, z2, z3, alpha, PI = 3.14, h = 5;
 	if (y < 0) h = -5;
@@ -830,12 +945,12 @@ void kolo(double x, double y, double z)
 	{
 		glBegin(GL_TRIANGLE_FAN);
 		glColor3d(0.1, 0.1, 0.1);
-		glVertex3d(x, y, z);
+		glVertex3d(0, 0, 0);
 		for (alpha = 0; alpha <= 8 * PI; alpha += PI / 8.0)
 		{
-			x1 = 21 * sin(alpha) + x;
-			z1 = 21 * cos(alpha) + z;
-			glVertex3d(x1, y, z1);
+			x1 = 21 * sin(alpha);
+			z1 = 21 * cos(alpha);
+			glVertex3d(x1, 0, z1);
 		}
 		glEnd();
 
@@ -843,25 +958,28 @@ void kolo(double x, double y, double z)
 		glColor3d(0.3, 0.3, 0.3);
 		for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
 		{
-			x1 = 21 * sin(alpha) + x;
-			z1 = 21 * cos(alpha) + z;
-			glVertex3d(x1, y - h, z1);
-			glVertex3d(x1, y, z1);
+			x1 = 21 * sin(alpha);
+			z1 = 21 * cos(alpha);
+			glVertex3d(x1, h, z1);
+			glVertex3d(x1, 0, z1);
 		}
 		glEnd();
 
-		sruba(x, y, z, 8, 1, 0.6);
+		sruba(0, 0, 0, 8, 1, 0.6);
 		for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
 		{
 			//sruby zewnetrzne 
-			x2 = 19 * sin(alpha) + x;
-			z2 = 19 * cos(alpha) + z;
-			sruba(x2, y, z2, 1, 1, 0.7);
-			
+			x2 = 19 * sin(alpha);
+			z2 = 19 * cos(alpha);
+			sruba(x2, 0, z2, 1, 1, 0.7);
+		}
+
+		for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 4.0)
+		{
 			//sruby wewnetrzne
-			x3 = 6 * sin(alpha) + x;
-			z3 = 6 * cos(alpha) + z;
-			sruba(x3, y, z3, 1, 2, 0.2);
+			x3 = 6 * sin(alpha);
+			z3 = 6 * cos(alpha);
+			sruba(x3, 0, z3, 1, 2, 0.2);
 		}
 	}
 }
@@ -993,32 +1111,10 @@ void gasienicaDolna(float y)
 
 void ukladGasienicowy(void)
 {
-	kolo(-137, 74.5, -36.5);
-	kolo(-101.5, 69.5, -50.5);
-	kolo(-74, 74.5, -50.5);
-	kolo(-48, 69.5, -50.5);
-	kolo(-21.5, 74.5, -50.5);
-	kolo(6, 69.5, -50.5);
-	kolo(34, 74.5, -50.5);
-	kolo(60, 69.5, -50.5);
-	kolo(86, 74.5, -50.5);
-	kolo(114, 69.5, -38.5);
-	
 	gasienicaGorna(-75);
 	gasienicaDolna(-75);
 	gasienicaGorna(47);
 	gasienicaDolna(47);
-
-	kolo(-137, -74.5, -36.5);
-	kolo(-101.5, -69.5, -50.5);
-	kolo(-74, -74.5, -50.5);
-	kolo(-48, -69.5, -50.5);
-	kolo(-21.5, -74.5, -50.5);
-	kolo(6, -69.5, -50.5);
-	kolo(34, -74.5, -50.5);
-	kolo(60, -69.5, -50.5);
-	kolo(86, -74.5, -50.5);
-	kolo(114, -69.5, -38.5);
 }
 
 void wydech(float r1, float r2, float h1, float h2)
@@ -1142,12 +1238,47 @@ void RenderScene(void)
 	/////////////////////////////////////////////////////////////////
 	// MIEJSCE NA KOD OPENGL DO TWORZENIA WLASNYCH SCEN:		   //
 	/////////////////////////////////////////////////////////////////
+	//glClear(GL_COLOR_BUFFER_BIT);
 
+	//glDisable(GL_DEPTH_TEST);
+
+	//glBindTexture(GL_TEXTURE_2D, texture[10]);
+
+	//glMatrixMode(GL_MODELVIEW);
+	//glLoadIdentity();
+	//glMatrixMode(GL_PROJECTION);
+	//glLoadIdentity();
+	//glOrtho(0, 1, 1, 0, -1, 1);
+	//glColor3f(1.0f, 1.0f, 1.0f);
+	//glBegin(GL_QUADS);
+	//glTexCoord2d(1.0, 1.0); glVertex3d(500, -500, 200);
+	//glTexCoord2d(0.0, 1.0); glVertex3d(500, 500, 200);
+	//glTexCoord2d(0.0, 0.0); glVertex3d(500, 500, 0);
+	//glTexCoord2d(1.0, 0.0); glVertex3d(500, -500, 0);
+
+	//glTexCoord2d(1.0, 1.0); glVertex3d(500, 500, 200);
+	//glTexCoord2d(0.0, 1.0); glVertex3d(-500, 500, 200);
+	//glTexCoord2d(0.0, 0.0); glVertex3d(-500, 500, 0);
+	//glTexCoord2d(1.0, 0.0); glVertex3d(500, 500, 0);
+
+	//glTexCoord2d(1.0, 1.0); glVertex3d(-500, 500, 200);
+	//glTexCoord2d(0.0, 1.0); glVertex3d(-500, -500, 200);
+	//glTexCoord2d(0.0, 0.0); glVertex3d(-500, -500, 0);
+	//glTexCoord2d(1.0, 0.0); glVertex3d(-500, 500, 0);
+
+	//glTexCoord2d(1.0, 1.0); glVertex3d(-500, -500, 200);
+	//glTexCoord2d(0.0, 1.0); glVertex3d(500, -500, 200);
+	//glTexCoord2d(0.0, 0.0); glVertex3d(500, -500, 0);
+	//glTexCoord2d(1.0, 0.0); glVertex3d(-500, -500, 0);
+	//glEnd();
+
+	//glDisable(GL_TEXTURE_2D); // Wy³¹cz teksturowanie
+	
 	//Sposób na odróŸnienie "przedniej" i "tylniej" œciany wielok¹ta:
 	glPolygonMode(GL_BACK, GL_LINE);
 	glScalef(zoom, zoom, zoom);
-	
-	szachownica(2000, 500);
+
+	szachownica(2000, 2000);
 		glPushMatrix();
 		glTranslatef(-154, 0, 0);
 		glRotatef(skret, 0, 0, 1);
@@ -1158,6 +1289,131 @@ void RenderScene(void)
 		blachaBoczna(-76.5);
 		blachaBoczna(76.5);
 		ukladGasienicowy();
+
+		//kola prawe
+		glPushMatrix();
+			glTranslatef(-137, 74.5, -36.5);
+			glRotatef(obrotKoloPrawe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(-101.5, 69.5, -50.5);
+			glRotatef(obrotKoloPrawe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(-74, 74.5, -50.5);
+			glRotatef(obrotKoloPrawe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(-48, 69.5, -50.5);
+			glRotatef(obrotKoloPrawe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(-21.5, 74.5, -50.5);
+			glRotatef(obrotKoloPrawe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(6, 69.5, -50.5);
+			glRotatef(obrotKoloPrawe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(6, 69.5, -50.5);
+			glRotatef(obrotKoloPrawe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(34, 74.5, -50.5);
+			glRotatef(obrotKoloPrawe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(60, 69.5, -50.5);
+			glRotatef(obrotKoloPrawe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(86, 74.5, -50.5);
+			glRotatef(obrotKoloPrawe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(114, 69.5, -38.5);
+			glRotatef(obrotKoloPrawe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+
+		//kola lewe
+		glPushMatrix();
+			glTranslatef(114, -69.5, -38.5);
+			glRotatef(180, 1, 0, 0);
+			glRotatef(obrotKoloLewe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(86, -74.5, -50.5);
+			glRotatef(180, 1, 0, 0);
+			glRotatef(obrotKoloLewe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(60, -69.5, -50.5);
+			glRotatef(180, 1, 0, 0);
+			glRotatef(obrotKoloLewe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(-137, -74.5, -36.5);
+			glRotatef(180, 1, 0, 0);
+			glRotatef(obrotKoloLewe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(-101.5, -69.5, -50.5);
+			glRotatef(180, 1, 0, 0);
+			glRotatef(obrotKoloLewe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(-74, -74.5, -50.5);
+			glRotatef(180, 1, 0, 0);
+			glRotatef(obrotKoloLewe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(-48, -69.5, -50.5);
+			glRotatef(180, 1, 0, 0);
+			glRotatef(obrotKoloLewe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(-21.5, -74.5, -50.5);
+			glRotatef(180, 1, 0, 0);
+			glRotatef(obrotKoloLewe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(6, -69.5, -50.5);
+			glRotatef(180, 1, 0, 0);
+			glRotatef(obrotKoloLewe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(6, -69.5, -50.5);
+			glRotatef(180, 1, 0, 0);
+			glRotatef(obrotKoloLewe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(34, -74.5, -50.5);
+			glRotatef(180, 1, 0, 0);
+			glRotatef(obrotKoloLewe, 0, 1, 0);
+			kolo(-1);
+		glPopMatrix();
 			glPushMatrix();
 			glTranslatef(130, -18, -28);
 			glRotatef(34, 0, 1, 0);
@@ -1192,6 +1448,7 @@ void RenderScene(void)
 	glMatrixMode(GL_MODELVIEW);
 	// Flush drawing commands
 	glFlush();
+	//glutSwapBuffers();
 }
 
 
@@ -1397,7 +1654,7 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		hRC = wglCreateContext(hDC);
 		wglMakeCurrent(hDC, hRC);
 		SetupRC();
-		glGenTextures(9, &texture[0]);                  // tworzy obiekt tekstury			
+		glGenTextures(20, &texture[0]);                  // tworzy obiekt tekstury			
 
 		// ³aduje pierwszy obraz tekstury:
 		bitmapData = LoadBitmapFile("objects/ambush_pattern.bmp", &bitmapInfoHeader);
@@ -1536,9 +1793,43 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		if (bitmapData)
 			free(bitmapData);
 
-		// ³aduje siódmy obraz tekstury:
+		// ³aduje ósmy obraz tekstury:
 		bitmapData = LoadBitmapFile("objects/tracks.bmp", &bitmapInfoHeader);
 		glBindTexture(GL_TEXTURE_2D, texture[8]);       // aktywuje obiekt tekstury
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+		// tworzy obraz tekstury
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bitmapInfoHeader.biWidth,
+			bitmapInfoHeader.biHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, bitmapData);
+
+		if (bitmapData)
+			free(bitmapData);
+
+		// ³aduje dziewi¹ty obraz tekstury:
+		bitmapData = LoadBitmapFile("objects/krata.bmp", &bitmapInfoHeader);
+		glBindTexture(GL_TEXTURE_2D, texture[9]);       // aktywuje obiekt tekstury
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+		// tworzy obraz tekstury
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bitmapInfoHeader.biWidth,
+			bitmapInfoHeader.biHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, bitmapData);
+
+		if (bitmapData)
+			free(bitmapData);
+
+		// ³aduje dziesi¹ty obraz tekstury:
+		bitmapData = LoadBitmapFile("objects/back1.bmp", &bitmapInfoHeader);
+		glBindTexture(GL_TEXTURE_2D, texture[10]);       // aktywuje obiekt tekstury
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -1655,13 +1946,13 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 
 		if (wParam == VK_F1)
 		{
-			if (ruchLufa < -6.0f && obrotWieza > 150.0f && obrotWieza < 210.0f)
+			if (ruchLufa < -4.0f && obrotWieza > 150.0f && obrotWieza < 210.0f)
 			{
-				ruchLufa = -6.0f;
+				ruchLufa = -4.0f;
 			}
-			else if(ruchLufa < -6.0f && obrotWieza < -150.0f && obrotWieza > -210.0f)
+			else if(ruchLufa < -4.0f && obrotWieza < -150.0f && obrotWieza > -210.0f)
 			{
-				ruchLufa = -6.0f;
+				ruchLufa = -4.0f;
 			}
 			else
 				obrotWieza += 3.0f;
@@ -1669,13 +1960,13 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 
 		if (wParam == VK_F2)
 		{
-			if (ruchLufa < -6.0f && obrotWieza < -150.0f && obrotWieza > -210.0f)
+			if (ruchLufa < -4.0f && obrotWieza < -150.0f && obrotWieza > -210.0f)
 			{
-				ruchLufa = -6.0f;
+				ruchLufa = -4.0f;
 			}
-			else if (ruchLufa < -6.0f && obrotWieza > 150.0f && obrotWieza < 210.0f)
+			else if (ruchLufa < -4.0f && obrotWieza > 150.0f && obrotWieza < 210.0f)
 			{
-				ruchLufa = -6.0f;
+				ruchLufa = -4.0f;
 			}
 			else
 				obrotWieza -= 3.0f;
@@ -1686,13 +1977,13 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 	
 		if (wParam == VK_F4 && ruchLufa >= -8.0f)
 		{
-			if (ruchLufa <= -6.0f && obrotWieza < -150.0f && obrotWieza > -210.0f)
+			if (ruchLufa <= -4.0f && obrotWieza < -150.0f && obrotWieza > -210.0f)
 			{
-				ruchLufa = -6.0f;
+				ruchLufa = -4.0f;
 			}
-			else if (ruchLufa <= -6.0f && obrotWieza > 150.0f && obrotWieza < 210.0f)
+			else if (ruchLufa <= -4.0f && obrotWieza > 150.0f && obrotWieza < 210.0f)
 			{
-				ruchLufa = -6.0f;
+				ruchLufa = -4.0f;
 			}
 			else
 				ruchLufa -= 1.0f;
@@ -1702,12 +1993,16 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		{
 			skret += 3.14 / 16;
 			ruchCzolg -= 3.0f;
+			obrotKoloLewe += 1.0f;
+			obrotKoloPrawe += 3.0f;
 		}
 
 		if (wParam == 'E')
 		{
 			skret -= 3.14 / 16;
 			ruchCzolg -= 3.0f;
+			obrotKoloLewe += 3.0f;
+			obrotKoloPrawe += 1.0f;
 		}
 
 
@@ -1715,32 +2010,44 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		{
 			skret -= 3.14 / 16;
 			ruchCzolg += 3.0f;
+			obrotKoloLewe -= 1.0f;
+			obrotKoloPrawe -= 3.0f;
 		}
 
 		if (wParam == 'C')
 		{
 			skret += 3.14 / 16;
 			ruchCzolg += 3.0f;
+			obrotKoloLewe -= 3.0f;
+			obrotKoloPrawe -= 1.0f;
 		}
 
 		if (wParam == 'A')
 		{
-			skret -= 3.14 / 16;
+			skret += 3.14 / 16;
+			obrotKoloLewe -= 2.0f;
+			obrotKoloPrawe += 2.0f;
 		}
 
 		if (wParam == 'D')
 		{
-			skret += 3.14 / 16;
+			skret -= 3.14 / 16;
+			obrotKoloLewe += 2.0f;
+			obrotKoloPrawe -= 2.0f;
 		}
 
 		if (wParam == 'W')
 		{
 			ruchCzolg -= 3.0f;
+			obrotKoloLewe += 3.0f;
+			obrotKoloPrawe += 3.0f;
 		}
 
 		if (wParam == 'X')
 		{
 			ruchCzolg += 3.0f;
+			obrotKoloLewe -= 3.0f;
+			obrotKoloPrawe -= 3.0f;
 		}
 
 		if (wParam == VK_F8 && zoom >= 0.2)
