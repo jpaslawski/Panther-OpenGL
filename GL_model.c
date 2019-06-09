@@ -32,9 +32,12 @@
 #include <gl\glu.h>             // GLU library
 #include <math.h>				// Define for sqrt
 #include <stdio.h>
-#include "resource.h"           // About box resource identifiers.
+#include "include\resource.h"           // About box resource identifiers.
+#include "include\AntTweakBar.h"
+#include "include\stb_image.h"			// Textures lib
 
-#include "stb_image.h"			// Textures lib
+#define GLFW_DLL
+#include "include\glfw.h"
 
 #define glRGB(x, y, z)	glColor3ub((GLubyte)x, (GLubyte)y, (GLubyte)z)
 #define BITMAP_ID 0x4D42		// identyfikator formatu BMP
@@ -82,6 +85,18 @@ BOOL APIENTRY AboutDlgProc(HWND hDlg, UINT message, UINT wParam, LONG lParam);
 // Set Pixel Format function - forward declaration
 void SetDCPixelFormat(HDC hDC);
 
+void GLFWCALL WindowSizeCB(int width, int height)
+{
+	// Set OpenGL viewport and camera
+	glViewport(0, 0, width, height);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(40, (double)width / height, 1, 10);
+	gluLookAt(-1, 0, 3, 0, 0, 0, 0, 1, 0);
+
+	// Send the new window size to AntTweakBar
+	TwWindowSize(width, height);
+}
 
 
 // Reduces a normal vector specified as a set of three coordinates,
@@ -172,18 +187,17 @@ void ChangeSize(GLsizei w, GLsizei h)
 }
 
 
-
 // This function does any needed initialization on the rendering
 // context.  Here it sets up and initializes the lighting for
 // the scene.
 void SetupRC()
 {
 	// Light values and coordinates
-	//GLfloat  ambientLight[] = { 0.3f, 0.3f, 0.3f, 1.0f };
-	//GLfloat  diffuseLight[] = { 0.7f, 0.7f, 0.7f, 1.0f };
-	//GLfloat  specular[] = { 1.0f, 1.0f, 1.0f, 1.0f};
-	//GLfloat	 lightPos[] = { 0.0f, 150.0f, 150.0f, 1.0f };
-	//GLfloat  specref[] =  { 1.0f, 1.0f, 1.0f, 1.0f };
+	GLfloat  ambientLight[] = { 0.3f, 0.3f, 0.3f, 1.0f };
+	GLfloat  diffuseLight[] = { 0.7f, 0.7f, 0.7f, 1.0f };
+	GLfloat  specular[] = { 1.0f, 1.0f, 1.0f, 1.0f};
+	GLfloat	 lightPos[] = { 0.0f, 150.0f, 150.0f, 1.0f };
+	GLfloat  specref[] =  { 1.0f, 1.0f, 1.0f, 1.0f };
 
 
 	glEnable(GL_DEPTH_TEST);	// Hidden surface removal
@@ -216,6 +230,19 @@ void SetupRC()
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	// Black brush
 	glColor3f(0.0, 0.0, 0.0);
+
+	TwInit(TW_OPENGL, NULL);
+	TwBar *bar;
+	bar = TwNewBar("Sterowanie");
+
+	// Add 'speed' to 'bar': it is a modifable (RW) variable of type TW_TYPE_DOUBLE. Its key shortcuts are [s] and [S].
+	TwAddVarRW(bar, "ruchLufa", TW_TYPE_INT32, &ruchLufa,
+		" label='Ruch lufa' min=-360 max=360 keyIncr=WM_F3 keyDecr=WM_F4 help='Defines the number of cubes in the scene.' ");
+
+	// Add 'wire' to 'bar': it is a modifable variable of type TW_TYPE_BOOL32 (32 bits boolean). Its key shortcut is [w].
+	TwAddVarRW(bar, "obrotWieza", TW_TYPE_INT32, &obrotWieza,
+		" label='Obrot wieza' min=obrotWieza max=obrotWieza keyIncr=WM_F1 keyDecr=WM_F2 help='Defines the number of cubes in the scene.' ");
+
 }
 
 void skrzynka(void)
@@ -343,25 +370,22 @@ unsigned char *LoadBitmapFile(char *filename, BITMAPINFOHEADER *bitmapInfoHeader
 
 void szachownica(int x, int y)
 {
-	int color = 0;
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	{
+	glColor3f(1, 1, 1);
+	glEnable(GL_TEXTURE_2D); // W³¹cz teksturowanie
+	glBindTexture(GL_TEXTURE_2D, texture[11]);
+	glBegin(GL_QUADS);
 	for (double i = -x / 2; i <= x / 2; i+=40)
-		for (double j = -y / 2; j <= y / 2; j+=40)
+	for (double j = -y / 2; j <= y / 2; j+=40)
+	{
 		{
-			{
-				glBegin(GL_QUADS);
-				glNormal3d(0, 0, 0);
-				glColor3f(color % 2, color % 2, color % 2);
-				glVertex3d(i, j + 40, -73.5);
-				glVertex3d(i + 40, j + 40, -73.5);
-				glVertex3d(i + 40, j, -73.5);
-				glVertex3d(i, j, -73.5);
-				glEnd();
-				color++;
-			}
+			glTexCoord2d(1.0, 1.0); glVertex3d(i, j + 40, -73.5);
+			glTexCoord2d(0.0, 1.0); glVertex3d(i + 40, j + 40, -73.5);
+			glTexCoord2d(0.0, 0.0); glVertex3d(i + 40, j, -73.5);
+			glTexCoord2d(1.0, 0.0); glVertex3d(i, j, -73.5);
 		}
-    }  
+	} 
+	glEnd();
 }
 
 
@@ -1273,7 +1297,8 @@ void RenderScene(void)
 	//glEnd();
 
 	//glDisable(GL_TEXTURE_2D); // Wy³¹cz teksturowanie
-	
+
+
 	//Sposób na odróŸnienie "przedniej" i "tylniej" œciany wielok¹ta:
 	glPolygonMode(GL_BACK, GL_LINE);
 	glScalef(zoom, zoom, zoom);
@@ -1427,11 +1452,9 @@ void RenderScene(void)
 		wlaz();
 		jarzmo();
 		glPushMatrix();
-			glRotatef(ruchLufa, 0, 1, 0);
 			glTranslatef(-31, 0, 27.5);
-			glPushMatrix();
-				lufa();
-			glPopMatrix();
+			glRotatef(ruchLufa, 0, 1, 0);
+			lufa();
 		glPopMatrix();
 		glPopMatrix();
 	glPopMatrix();
@@ -1442,6 +1465,7 @@ void RenderScene(void)
 	//Wyrysowanie prostokata:
 	//glRectd(-10.0,-10.0,20.0,20.0);
 
+	TwDraw();
 	/////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////
@@ -1844,6 +1868,24 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		if (bitmapData)
 			free(bitmapData);
 
+		// ³aduje dziesi¹ty obraz tekstury:
+		bitmapData = LoadBitmapFile("objects/piasek.bmp", &bitmapInfoHeader);
+		glBindTexture(GL_TEXTURE_2D, texture[11]);       // aktywuje obiekt tekstury
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+		// tworzy obraz tekstury
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bitmapInfoHeader.biWidth,
+			bitmapInfoHeader.biHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, bitmapData);
+
+		if (bitmapData)
+			free(bitmapData);
+
+
 		// ustalenie sposobu mieszania tekstury z t³em
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		break;
@@ -2040,14 +2082,14 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		{
 			ruchCzolg -= 3.0f;
 			obrotKoloLewe += 3.0f;
-			obrotKoloPrawe += 3.0f;
+			obrotKoloPrawe -= 3.0f;
 		}
 
 		if (wParam == 'X')
 		{
 			ruchCzolg += 3.0f;
 			obrotKoloLewe -= 3.0f;
-			obrotKoloPrawe -= 3.0f;
+			obrotKoloPrawe += 3.0f;
 		}
 
 		if (wParam == VK_F8 && zoom >= 0.2)
@@ -2093,6 +2135,8 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		return (DefWindowProc(hWnd, message, wParam, lParam));
 
 	}
+	if (TwEventWin(hWnd, message, wParam, lParam)) // send event message to AntTweakBar
+		return 0;
 
 	return (0L);
 }
@@ -2147,6 +2191,7 @@ BOOL APIENTRY AboutDlgProc(HWND hDlg, UINT message, UINT wParam, LONG lParam)
 
 	// Closed from sysbox
 	case WM_CLOSE:
+		TwTerminate();
 		EndDialog(hDlg, TRUE);
 		break;
 	}
