@@ -1,8 +1,8 @@
-// Gl_template.c
-//Wy³šczanie b³êdów przed "fopen"
+// Deklaracja dyrektyw preprocesora oraz bibliotek
+
+//Wy³¹czanie b³êdów przed "fopen"
 #define STB_IMAGE_IMPLEMENTATION
 #define  _CRT_SECURE_NO_WARNINGS
-
 
 
 // £adowanie bibliotek:
@@ -28,20 +28,34 @@
 #   endif
 #endif
 #include <windows.h>            // Window defines
-#include <gl\gl.h>              // OpenGL
-#include <gl\glu.h>             // GLU library
-#include <math.h>				// Define for sqrt
-#include <stdio.h>
-#include "include\resource.h"           // About box resource identifiers.
-#include "include\AntTweakBar.h"
-#include "include\stb_image.h"			// Textures lib
+#include <gl/gl.h>              // OpenGL
+#include <gl/glu.h>             // GLU library
 
-#define GLFW_DLL
-#include "include\glfw.h"
+#include "include/resource.h"           // About box resource identifiers.
+#include "include/stb_image.h"			// Textures lib
+#include "include/AntTweakBar.h"
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+#if defined(_WIN32) || defined(_WIN64)
+//  MiniGLUT.h is provided to avoid the need of having GLUT installed to 
+//  recompile this example. Do not use it in your own programs, better
+//  install and use the actual GLUT library SDK.
+#   define USE_MINI_GLUT
+#endif
+
+#if defined(USE_MINI_GLUT)
+#   include "include/MiniGLUT.h"
+#endif
+
 
 #define glRGB(x, y, z)	glColor3ub((GLubyte)x, (GLubyte)y, (GLubyte)z)
 #define BITMAP_ID 0x4D42		// identyfikator formatu BMP
 #define GL_PI 3.14
+
+// Deklaracja zmiennych globalnych
 
 // Color Palette handle
 HPALETTE hPalette = NULL;
@@ -50,9 +64,11 @@ HPALETTE hPalette = NULL;
 static LPCTSTR lpszAppName = "Panther";
 static HINSTANCE hInstance;
 
-// Rotation amounts
-static GLfloat xRot = 0.0f;
-static GLfloat yRot = 0.0f;
+// Kamera
+static GLfloat xRot = 270.0f;
+static GLfloat xMove = -100.0f;
+static GLfloat yMove = 0.0f;
+static GLfloat yRot = 270.0f;
 
 
 static GLsizei lastHeight;
@@ -64,43 +80,37 @@ unsigned char*		bitmapData;			// dane tekstury
 unsigned int		texture[20];			// obiekt tekstury
 
 //Obrót poszczególnych czêœci czo³gu
-float obrotWieza = 0;
-float ruchLufa = 0;
-float ruchCzolg = 0;
-float obrotKoloLewe = 0;
-float obrotKoloPrawe = 0;
-float skret = 0;
-float zoom = 0.4;
+static GLfloat PosX = 0.0f;
+static GLfloat PosY = 0.0f;
+static GLint color = 0;
+static GLint freq = 2;
+static GLfloat obrotWieza = 0.0f;
+static GLfloat ruchLufa = 0.0f;
+static GLfloat obrotKoloLewe = 0.0f;
+static GLfloat obrotKoloPrawe = 0.0f;
+static GLfloat skret = 0.0f;
+static GLfloat zoom = 0.4f;
 
+float sinus[36] = {0, 0.173, 0.342, 0.5, 0.642, 0.766, 0.866, 0.939, 0.984, 1, 0.984, 0.939, 0.866, 0.766, 0.642, 0.5, 0.342, 0.173, 0, 
+					-0.173, -0.342, -0.5, -0.642, -0.766, -0.866, -0.939, -0.984, -1, -0.984, -0.939, -0.866, -0.766, -0.642, -0.5, -0.342, -0.173};
+float cosinus[36] = { 1, 0.984, 0.939, 0.866, 0.766, 0.642, 0.5, 0.342, 0.173, 0, -0.173, -0.342, -0.5, -0.642, -0.766, -0.866, -0.939, -0.984, -1,
+					-0.984, -0.939, -0.866, -0.766, -0.642, -0.5, -0.342, -0.173, 0, 0.173, 0.342, 0.5, 0.642, 0.766, 0.866, 0.939, 0.984};
 
-// Declaration for Window procedure
+// Deklaracja procedury okna
 LRESULT CALLBACK WndProc(HWND    hWnd,
 	UINT    message,
 	WPARAM  wParam,
 	LPARAM  lParam);
 
-// Dialog procedure for about box
+// Deklaracja procedury okna „dialogowego” AboutBox
 BOOL APIENTRY AboutDlgProc(HWND hDlg, UINT message, UINT wParam, LONG lParam);
 
 // Set Pixel Format function - forward declaration
 void SetDCPixelFormat(HDC hDC);
 
-void GLFWCALL WindowSizeCB(int width, int height)
-{
-	// Set OpenGL viewport and camera
-	glViewport(0, 0, width, height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(40, (double)width / height, 1, 10);
-	gluLookAt(-1, 0, 3, 0, 0, 0, 0, 1, 0);
 
-	// Send the new window size to AntTweakBar
-	TwWindowSize(width, height);
-}
-
-
-// Reduces a normal vector specified as a set of three coordinates,
-// to a unit normal vector of length one.
+// Funkcja ReduceToUnit sprowadzaj¹ca
+// wektor sk³adaj¹cy siê z 3 punktów do wektora o d³ugoœci 1
 void ReduceToUnit(float vector[3])
 {
 	float length;
@@ -162,6 +172,7 @@ void ChangeSize(GLsizei w, GLsizei h)
 
 	lastWidth = w;
 	lastHeight = h;
+	TwWindowSize(w, h);
 
 	fAspect = (GLfloat)w / (GLfloat)h;
 	// Set Viewport to window dimensions
@@ -172,16 +183,14 @@ void ChangeSize(GLsizei w, GLsizei h)
 	glLoadIdentity();
 
 	// Establish clipping volume (left, right, bottom, top, near, far)
-	if (w <= h)
+	/*if (w <= h)
 		glOrtho(-nRange, nRange, -nRange * h / w, nRange*h / w, -nRange, nRange);
 	else
-		glOrtho(-nRange * w / h, nRange*w / h, -nRange, nRange, -nRange, nRange);
+		glOrtho(-nRange * w / h, nRange*w / h, -nRange, nRange, -nRange, nRange);*/
+
 
 	// Establish perspective: 
-	/*
-	gluPerspective(60.0f,fAspect,1.0,400);
-	*/
-
+	gluPerspective(60.0f,fAspect,1.0,2000.0f);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }
@@ -199,107 +208,60 @@ void SetupRC()
 	GLfloat	 lightPos[] = { 0.0f, 150.0f, 150.0f, 1.0f };
 	GLfloat  specref[] =  { 1.0f, 1.0f, 1.0f, 1.0f };
 
+	float g_LightMultiplier = 1.0f;
+	float g_LightDirection[] = { -0.57735f, -0.57735f, -0.57735f };
+
+	srand(time(NULL));
 
 	glEnable(GL_DEPTH_TEST);	// Hidden surface removal
 	//glFrontFace(GL_CCW);		// Counter clock-wise polygons face out
 	//glEnable(GL_CULL_FACE);		// Do not calculate inside of jet
 
 	// Enable lighting
-	//glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHTING);
 
-	// Setup and enable light 0
-	//glLightfv(GL_LIGHT0,GL_AMBIENT,ambientLight);
-	//glLightfv(GL_LIGHT0,GL_DIFFUSE,diffuseLight);
-	//glLightfv(GL_LIGHT0,GL_SPECULAR,specular);
-	//glLightfv(GL_LIGHT0,GL_POSITION,lightPos);
-	//glEnable(GL_LIGHT0);
+	////Setup and enable light 0
+	glLightfv(GL_LIGHT0,GL_AMBIENT,ambientLight);
+	glLightfv(GL_LIGHT0,GL_DIFFUSE,diffuseLight);
+	glLightfv(GL_LIGHT0,GL_SPECULAR,specular);
+	glLightfv(GL_LIGHT0,GL_POSITION,lightPos);
+	glEnable(GL_LIGHT0);
+
+	// Set light
+	float v[4]; // will be used to set light parameters
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	v[0] = v[1] = v[2] = g_LightMultiplier * 0.4f; v[3] = 1.0f;
+	glLightfv(GL_LIGHT0, GL_AMBIENT, v);
+	v[0] = v[1] = v[2] = g_LightMultiplier * 0.8f; v[3] = 1.0f;
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, v);
+	v[0] = -g_LightDirection[0]; v[1] = -g_LightDirection[1]; v[2] = -g_LightDirection[2]; v[3] = 0.0f;
+	glLightfv(GL_LIGHT0, GL_POSITION, v);
 
 	// Enable color tracking
-	//glEnable(GL_COLOR_MATERIAL);
+	glEnable(GL_COLOR_MATERIAL);
 
 	// Set Material properties to follow glColor values
-	//glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-
-	// All materials hereafter have full specular reflectivity
-	// with a high shine
-	//glMaterialfv(GL_FRONT, GL_SPECULAR,specref);
-	//glMateriali(GL_FRONT,GL_SHININESS,128);
-
+	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 
 	// White background
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClearColor(0.6f, 0.9f, 0.6f, 1.0f);
 	// Black brush
 	glColor3f(0.0, 0.0, 0.0);
 
 	TwInit(TW_OPENGL, NULL);
 	TwBar *bar;
+
 	bar = TwNewBar("Sterowanie");
-
-	// Add 'speed' to 'bar': it is a modifable (RW) variable of type TW_TYPE_DOUBLE. Its key shortcuts are [s] and [S].
-	TwAddVarRW(bar, "ruchLufa", TW_TYPE_INT32, &ruchLufa,
-		" label='Ruch lufa' min=-360 max=360 keyIncr=WM_F3 keyDecr=WM_F4 help='Defines the number of cubes in the scene.' ");
-
-	// Add 'wire' to 'bar': it is a modifable variable of type TW_TYPE_BOOL32 (32 bits boolean). Its key shortcut is [w].
-	TwAddVarRW(bar, "obrotWieza", TW_TYPE_INT32, &obrotWieza,
-		" label='Obrot wieza' min=obrotWieza max=obrotWieza keyIncr=WM_F1 keyDecr=WM_F2 help='Defines the number of cubes in the scene.' ");
-
+	TwAddVarRW(bar, "zoom", TW_TYPE_FLOAT, &zoom,"keyIncr=F9 keyDecr=F8 help='Przyblizanie oraz oddalanie sceny'");
+	TwAddVarRW(bar, "xPos", TW_TYPE_FLOAT, &xMove,"keyIncr=W keyDecr=X help='Jazda czolgiem do przodu'");
+	TwAddVarRW(bar, "yPos", TW_TYPE_FLOAT, &yMove,"help='Obracanie czolgiem'");
+	TwAddVarRW(bar, "xRot", TW_TYPE_FLOAT, &xRot, "help='Kat kamery wzgledem glownej osi X'");
+	TwAddVarRW(bar, "yRot", TW_TYPE_FLOAT, &yRot, "keyIncr=VK_RIGHT keyDecr=VK_LEFT help='Kat kamery wzgledem glownej osi Y'");
+	TwAddVarRW(bar, "Kat skretu", TW_TYPE_FLOAT, &skret, "");
+	TwAddVarRW(bar, "Kat lufy", TW_TYPE_FLOAT, &ruchLufa, "");
+	TwAddVarRW(bar, "Kat wiezy", TW_TYPE_FLOAT, &obrotWieza, "");
 }
-
-void skrzynka(void)
-{
-	glColor3d(0.8, 0.7, 0.3);
-
-
-	glEnable(GL_TEXTURE_2D); // W³¹cz teksturowanie
-
-	glBindTexture(GL_TEXTURE_2D, texture[0]);
-	glBegin(GL_QUADS);
-	glNormal3d(0, 0, 1);
-	glTexCoord2d(1.0, 1.0); glVertex3d(25, 25, 25);
-	glTexCoord2d(0.0, 1.0); glVertex3d(-25, 25, 25);
-	glTexCoord2d(0.0, 0.0); glVertex3d(-25, -25, 25);
-	glTexCoord2d(1.0, 0.0); glVertex3d(25, -25, 25);
-	glEnd();
-	glBindTexture(GL_TEXTURE_2D, texture[0]);
-	glBegin(GL_QUADS);
-	glNormal3d(1, 0, 0);
-	glTexCoord2d(1.0, 1.0); glVertex3d(25, 25, 25);
-	glTexCoord2d(0.0, 1.0); glVertex3d(25, -25, 25);
-	glTexCoord2d(0.0, 0.0); glVertex3d(25, -25, -25);
-	glTexCoord2d(1.0, 0.0); glVertex3d(25, 25, -25);
-	glEnd();
-
-	glDisable(GL_TEXTURE_2D); // Wy³¹cz teksturowanie
-
-
-
-	glBegin(GL_QUADS);
-	glNormal3d(0, 0, -1);
-	glVertex3d(25, 25, -25);
-	glVertex3d(25, -25, -25);
-	glVertex3d(-25, -25, -25);
-	glVertex3d(-25, 25, -25);
-
-	glNormal3d(-1, 0, 0);
-	glVertex3d(-25, 25, -25);
-	glVertex3d(-25, -25, -25);
-	glVertex3d(-25, -25, 25);
-	glVertex3d(-25, 25, 25);
-
-	glNormal3d(0, 1, 0);
-	glVertex3d(25, 25, 25);
-	glVertex3d(25, 25, -25);
-	glVertex3d(-25, 25, -25);
-	glVertex3d(-25, 25, 25);
-
-	glNormal3d(0, -1, 0);
-	glVertex3d(25, -25, 25);
-	glVertex3d(-25, -25, 25);
-	glVertex3d(-25, -25, -25);
-	glVertex3d(25, -25, -25);
-	glEnd();
-}
-
 
 // LoadBitmapFile
 // opis: ³aduje mapê bitow¹ z pliku i zwraca jej adres.
@@ -424,28 +386,34 @@ void wieza(void)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glColor3d(1, 1, 1);
 	glEnable(GL_TEXTURE_2D); // W³¹cz teksturowanie
-	glBindTexture(GL_TEXTURE_2D, texture[0]);
+	glBindTexture(GL_TEXTURE_2D, texture[1]);
 	glBegin(GL_QUADS);
-	glTexCoord2d(1.0, 1.0); glVertex3d(75, 56, 6); 
-	glTexCoord2d(0.0, 1.0); glVertex3d(55, 44, 44);
-	glTexCoord2d(0.0, 0.0); glVertex3d(55, -44, 44); 
-	glTexCoord2d(1.0, 0.0); glVertex3d(75, -56, 6);
-	
-	glTexCoord2d(1.0, 1.0); glVertex3d(55, 44, 44);
-	glTexCoord2d(0.0, 1.0); glVertex3d(75, 56, 6);
-	glTexCoord2d(0.0, 0.0); glVertex3d(-34, 56, 6);
-	glTexCoord2d(1.0, 0.0); glVertex3d(-28, 44, 44);
-
 	glTexCoord2d(1.0, 1.0); glVertex3d(-34, 56, 6);
 	glTexCoord2d(0.0, 1.0); glVertex3d(-28, -44, 44);
 	glTexCoord2d(0.0, 0.0); glVertex3d(-34, -56, 6);
+	glTexCoord2d(1.0, 0.0); glVertex3d(-28, 44, 44);
+
+	glTexCoord2d(1.0, 1.0); glVertex3d(55, 44, 44);
+	glTexCoord2d(0.0, 1.0); glVertex3d(75, 56, 6);
+	glTexCoord2d(0.0, 0.0); glVertex3d(-34, 56, 6);
 	glTexCoord2d(1.0, 0.0); glVertex3d(-28, 44, 44);
 
 	glTexCoord2d(1.0, 1.0); glVertex3d(-28, -44, 44);
 	glTexCoord2d(0.0, 1.0); glVertex3d(-34, -56, 6);
 	glTexCoord2d(0.0, 0.0); glVertex3d(75, -56, 6);
 	glTexCoord2d(1.0, 0.0); glVertex3d(55, -44, 44);
+	glEnd();
 
+	glBindTexture(GL_TEXTURE_2D, texture[4]);
+	glBegin(GL_QUADS);
+	glTexCoord2d(1.0, 1.0); glVertex3d(75, 56, 6);
+	glTexCoord2d(0.0, 1.0); glVertex3d(55, 44, 44);
+	glTexCoord2d(0.0, 0.0); glVertex3d(55, -44, 44);
+	glTexCoord2d(1.0, 0.0); glVertex3d(75, -56, 6);
+	glEnd();
+
+	glBindTexture(GL_TEXTURE_2D, texture[3]);
+	glBegin(GL_QUADS);
 	glTexCoord2d(1.0, 1.0); glVertex3d(75, -56, 6);
 	glTexCoord2d(0.0, 1.0); glVertex3d(75, 56, 6);
 	glTexCoord2d(0.0, 0.0); glVertex3d(-34, 56, 6);
@@ -458,10 +426,6 @@ void wieza(void)
 	glTexCoord2d(1.0, 0.0); glVertex3d(-28, -44, 44);
 	glEnd();
 
-	/*glTexCoord2d(1.0, 1.0); glVertex3d(25, 25, 25);
-	glTexCoord2d(0.0, 1.0); glVertex3d(-25, 25, 25);
-	glTexCoord2d(0.0, 0.0); glVertex3d(-25, -25, 25);
-	glTexCoord2d(1.0, 0.0); glVertex3d(25, -25, 25);*/
 	glDisable(GL_TEXTURE_2D); // Wy³¹cz teksturowanie
 
 }
@@ -599,7 +563,7 @@ void lufa(void)
 	//lufa
 	glColor3d(1, 1, 1);
 	glEnable(GL_TEXTURE_2D); // W³¹cz teksturowanie
-	glBindTexture(GL_TEXTURE_2D, texture[6]);
+	glBindTexture(GL_TEXTURE_2D, texture[15]);
 	glBegin(GL_QUADS);
 	for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
 	{
@@ -616,7 +580,7 @@ void lufa(void)
 	glEnd();
 
 	//jarzmo zewnêtrzne
-	glColor3d(0.5, 0.5, 0.5);
+	glColor3d(0.4, 0.4, 0.4);
 	glBindTexture(GL_TEXTURE_2D, texture[2]);
 	glBegin(GL_TRIANGLE_FAN);
 	for (alpha = 0; alpha >= -7 * PI / 8.0; alpha -= PI / 8.0)
@@ -717,13 +681,21 @@ void kadlub(void)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glColor3d(0.6, 0.6, 0.6);
 	glEnable(GL_TEXTURE_2D); // W³¹cz teksturowanie
-	glBindTexture(GL_TEXTURE_2D, texture[4]);
+	glBindTexture(GL_TEXTURE_2D, texture[14]);
 	//góra
 	glBegin(GL_QUADS);
 	glTexCoord2d(1.0, 1.0); glVertex3d(154, 60.5, 6);
+	glTexCoord2d(0.0, 1.0); glVertex3d(0, 60.5, 6);
+	glTexCoord2d(0.0, 0.0); glVertex3d(0, -60.5, 6);
+	glTexCoord2d(1.0, 0.0); glVertex3d(154, -60.5, 6);
+	glEnd();
+
+	glBindTexture(GL_TEXTURE_2D, texture[15]);
+	glBegin(GL_QUADS);
+	glTexCoord2d(1.0, 1.0); glVertex3d(0, 60.5, 6);
 	glTexCoord2d(0.0, 1.0); glVertex3d(-95.5, 60.5, 6);
 	glTexCoord2d(0.0, 0.0); glVertex3d(-95.5, -60.5, 6);
-	glTexCoord2d(1.0, 0.0); glVertex3d(154, -60.5, 6);
+	glTexCoord2d(1.0, 0.0); glVertex3d(0, -60.5, 6);
 	glEnd();
 
 	//prawy wentylator - ch³odzenie silnika
@@ -833,31 +805,46 @@ void kadlub(void)
 	glTexCoord2d(0.0, 1.0); glVertex3d(112, -44, -57.5);
 	glTexCoord2d(0.0, 0.0); glVertex3d(112, 44, -57.5);
     glTexCoord2d(1.0, 0.0); glVertex3d(-126, 44, -57.5);
+	glEnd();
 
 	//boki
 	glColor3d(1, 1, 1);
+	glBindTexture(GL_TEXTURE_2D, texture[5]);
+	glBegin(GL_QUADS);
 	glTexCoord2d(1.0, 1.0); glVertex3d(154, -60.5, 6);
 	glTexCoord2d(0.0, 1.0); glVertex3d(154, 60.5, 6);
 	glTexCoord2d(0.0, 0.0); glVertex3d(139, 76.5, -16.5); 
 	glTexCoord2d(1.0, 0.0); glVertex3d(139, -76.5, -16.5); 
+	glEnd();
 
+	glBindTexture(GL_TEXTURE_2D, texture[12]);
+	glColor3d(0.5, 0.5, 0.5);
+	glBegin(GL_QUADS);
 	glTexCoord2d(1.0, 1.0); glVertex3d(-126, 76.5, -16.5);
 	glTexCoord2d(0.0, 1.0); glVertex3d(139, 76.5, -16.5);
 	glTexCoord2d(0.0, 0.0); glVertex3d(154, 60.5, 6);
 	glTexCoord2d(1.0, 0.0); glVertex3d(-95.5, 60.5, 6);
+	glEnd();
 
-	glColor3d(0.8, 0.8, 0.8);
+	glBindTexture(GL_TEXTURE_2D, texture[13]);
+	glBegin(GL_QUADS);
 	glTexCoord2d(1.0, 1.0); glVertex3d(-126, -76.5, -16.5); 
 	glTexCoord2d(0.0, 1.0); glVertex3d(139, -76.5, -16.5);
 	glTexCoord2d(0.0, 0.0); glVertex3d(154, -60.5, 6);
 	glTexCoord2d(1.0, 0.0); glVertex3d(-95.5, -60.5, 6);
+	glEnd();
 
+	glBindTexture(GL_TEXTURE_2D, texture[6]);
+	glBegin(GL_QUADS);
 	glTexCoord2d(1.0, 1.0); glVertex3d(-95.5, -60.5, 6);
 	glTexCoord2d(0.0, 1.0); glVertex3d(-95.5, 60.5, 6);
 	glTexCoord2d(0.0, 0.0); glVertex3d(-126, 76.5, -16.5);
 	glTexCoord2d(1.0, 0.0); glVertex3d(-126, -76.5, -16.5);
+	glEnd();
 
 	//dó³ - podwozie górne
+	glBindTexture(GL_TEXTURE_2D, texture[5]);
+	glBegin(GL_QUADS);
 	glTexCoord2d(1.0, 1.0); glVertex3d(139, -76.5, -16.5);
 	glTexCoord2d(0.0, 1.0); glVertex3d(-126, -76.5, -16.5);
 	glTexCoord2d(0.0, 0.0); glVertex3d(-126, 76.5, -16.5);
@@ -874,9 +861,11 @@ void kadlub(void)
 	glTexCoord2d(0.0, 1.0); glVertex3d(-154, -44, -34);
 	glTexCoord2d(0.0, 0.0); glVertex3d(-126, -44, -16.5); 
 	glTexCoord2d(1.0, 0.0); glVertex3d(-126, 44, -16.5);
+	glEnd();
 
 	//przód - dolna p³yta
 	glColor3d(0.3, 0.3, 0.3);
+	glBegin(GL_QUADS);
 	glTexCoord2d(1.0, 1.0); glVertex3d(-154, 44, -34); 
 	glTexCoord2d(0.0, 1.0); glVertex3d(-154, -44, -34);
 	glTexCoord2d(0.0, 0.0); glVertex3d(-126, -44, -57.5);
@@ -913,53 +902,16 @@ void blachaBoczna(float y)
 {
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glEnable(GL_TEXTURE_2D); // W³¹cz teksturowanie
-	glBindTexture(GL_TEXTURE_2D, texture[5]);
-	glBegin(GL_QUADS);
-	glColor3d(0.7, 0.7, 0.7);
-	glTexCoord2d(1.0, 1.0); glVertex3d(-126, y, -16.5);
-	glTexCoord2d(0.0, 1.0); glVertex3d(141, y, -16.5);
-	glTexCoord2d(0.0, 0.0); glVertex3d(141, y, -36.5);
-	glTexCoord2d(1.0, 0.0); glVertex3d(-126, y, -36.5);
+	glBindTexture(GL_TEXTURE_2D, texture[16]);
+	glBegin(GL_QUAD_STRIP);
+	glTexCoord2d(0.0, 0.0); glVertex3d(-126, y, -36.5);
+	glTexCoord2d(0.0, 1.0); glVertex3d(-126, y, -16.5);
+	glTexCoord2d(1.0, 0.0); glVertex3d(141, y, -36.5);
+	glTexCoord2d(1.0, 1.0); glVertex3d(141, y, -16.5);
 	glEnd();
 	glDisable(GL_TEXTURE_2D); // Wy³¹cz teksturowanie
 }
 
-void kolpak(double y)
-{
-	/*double x1, x2, x3, z1, z2, z3, alpha, PI = 3.14, h = 32.5;
-	if (y < 0) h = -32.5;
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	{
-		glBegin(GL_TRIANGLE_FAN);
-		glColor3d(0.1, 0.1, 0.1);
-		glVertex3d(-137, y, -36.5);
-		for (alpha = -PI + 3 * PI / 8.0; alpha <= PI / 8.0; alpha += PI / 8.0)
-		{
-			x1 = 25 * sin(alpha) - 137;
-			z1 = 25 * cos(alpha) - 41.5;
-			glVertex3d(x1, y, z1);
-		}
-		glEnd();
-
-		glBegin(GL_QUAD_STRIP);
-		glColor3d(0.3, 0.3, 0.3);
-		for (alpha = - PI + 3*PI / 8.0; alpha <= PI / 8.0; alpha += PI / 8.0)
-		{
-			x1 = 25 * sin(alpha) - 137;
-			z1 = 25 * cos(alpha) - 41.5;
-			glVertex3d(x1, y + h, z1);
-			glVertex3d(x1, y, z1);
-		}
-		glEnd();
-
-		glBegin(GL_QUADS);
-		glVertex3d(-137, y + h, -16.5);
-		glVertex3d(-137, y, -16.5);
-		glVertex3d(-112, y, -16.5);
-		glVertex3d(-112, y + h, -16.5);
-		glEnd();
-	}*/
-}
 
 void kolo(float y)
 {
@@ -1010,16 +962,17 @@ void kolo(float y)
 
 void gasienicaGorna(float y)
 {
-	float z = -16.5,  color = 0.1;
+	float z = -16.5;
 	int a = 0;
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	{
 		glBegin(GL_QUAD_STRIP);
 		for (float x1 = -130.0; x1 <= 110.0; x1 += 5.0)
 		{
-			if (a % 2 == 0) { color = 0.2; }
-			else { color = 0.7; }
-			glColor3d(color, color, color);
+			if (a % 2 == (color % freq == 0))
+				glColor3d(0.2, 0.2, 0.2);
+			else 
+				glColor3d(0.7, 0.7, 0.7);
 			glVertex3f(x1, y, z);
 			glVertex3f(x1, y + 28, z);
 
@@ -1055,7 +1008,7 @@ void gasienicaGorna(float y)
 
 void gasienicaDolna(float y)
 {
-	float x, z = -56.5, x_next, z_next, color = 0.1;
+	float x, z = -56.5, x_next, z_next;
 	int a = 0;
 	double alpha, PI = 3.14;
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -1066,9 +1019,10 @@ void gasienicaDolna(float y)
 
 		for (float x1 = -145.0; x1 <= 128.0; x1 += 5.0)
 		{
-			if (a % 2 == 0) { color = 0.2; }
-			else { color = 0.7; }
-			glColor3d(color, color, color);
+			if (a % 2 == (color % freq == 0))
+				glColor3d(0.2, 0.2, 0.2);
+			else
+				glColor3d(0.7, 0.7, 0.7);
 			glVertex3f(x1, y, z);
 			glVertex3f(x1, y + 28, z);
 
@@ -1096,9 +1050,10 @@ void gasienicaDolna(float y)
 		glBegin(GL_QUAD_STRIP);
 		for (alpha = -PI + PI / 14.0; alpha <= PI / 7.0; alpha += PI / 14.0)
 		{
-			if (a % 2 == 0) { color = 0.2; }
-			else { color = 0.7; }
-			glColor3d(color, color, color);
+			if (a % 2 == (color % freq == 0))
+				glColor3d(0.2, 0.2, 0.2);
+			else
+				glColor3d(0.7, 0.7, 0.7);
 			x = 21.5 * sin(alpha) - 137;
 			z = 21.5 * cos(alpha) - 36.5;
 			/*x_next = 21.5 * sin(alpha + PI / 14.0) - 137;
@@ -1119,9 +1074,10 @@ void gasienicaDolna(float y)
 		glBegin(GL_QUAD_STRIP);
 		for (alpha = - PI / 14.0; alpha <= PI - PI / 14.0; alpha += PI / 14.0)
 		{
-			if (a % 2 == 0) { color = 0.2; }
-			else { color = 0.7; }
-			glColor3d(color, color, color);
+			if (a % 2 == (color % freq == 0))
+				glColor3d(0.2, 0.2, 0.2);
+			else
+				glColor3d(0.7, 0.7, 0.7);
 			x = 21.5 * sin(alpha) + 114;
 			z = 21.5 * cos(alpha) - 38.5;
 			glVertex3d(x, y, z);
@@ -1160,7 +1116,7 @@ void wydech(float r1, float r2, float h1, float h2)
 	glEnd();
 
 	glBegin(GL_QUAD_STRIP);
-	glColor3d(0.6, 0.6, 0.6);
+	glColor3d(0.4, 0.4, 0.4);
 	for (alpha = 0.0; alpha <= PI; alpha += PI / 8.0)
 	{
 		x1 = r1 * sin(alpha);
@@ -1220,38 +1176,9 @@ void wydech(float r1, float r2, float h1, float h2)
 }
 
 
-void stozek(double r, double h)
-{
-	double x, y, alpha, PI = 3.14;
-	glBegin(GL_TRIANGLE_FAN);
-	glColor3d(0, 0, 0);
-	glVertex3d(0, 0, 0);
-	for (alpha = 0; alpha <= 8 * PI; alpha += PI / 8.0)
-	{
-		x = r * sin(alpha);
-		y = r * cos(alpha);
-		glVertex3d(x, y, 0);
-	}
-	glEnd();
-
-	glBegin(GL_QUAD_STRIP);
-	glColor3d(0.2, 0.1, 0);
-	for (alpha = 0.0; alpha <= 2 * PI; alpha += PI / 8.0)
-	{
-		x = r * sin(alpha);
-		y = r * cos(alpha);
-		glVertex3d(x, y, 0);
-		glVertex3d(0, 0, h);
-	}
-	glEnd();
-
-}
-
 // Called to draw scene
 void RenderScene(void)
 {
-	//float normal[3];	// Storeage for calculated surface normal
-
 	// Clear the window with current clearing color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -1259,58 +1186,18 @@ void RenderScene(void)
 	glPushMatrix();
 	glRotatef(xRot, 1.0f, 0.0f, 0.0f);
 	glRotatef(yRot, 0.0f, 0.0f, 1.0f);
-	/////////////////////////////////////////////////////////////////
-	// MIEJSCE NA KOD OPENGL DO TWORZENIA WLASNYCH SCEN:		   //
-	/////////////////////////////////////////////////////////////////
-	//glClear(GL_COLOR_BUFFER_BIT);
-
-	//glDisable(GL_DEPTH_TEST);
-
-	//glBindTexture(GL_TEXTURE_2D, texture[10]);
-
-	//glMatrixMode(GL_MODELVIEW);
-	//glLoadIdentity();
-	//glMatrixMode(GL_PROJECTION);
-	//glLoadIdentity();
-	//glOrtho(0, 1, 1, 0, -1, 1);
-	//glColor3f(1.0f, 1.0f, 1.0f);
-	//glBegin(GL_QUADS);
-	//glTexCoord2d(1.0, 1.0); glVertex3d(500, -500, 200);
-	//glTexCoord2d(0.0, 1.0); glVertex3d(500, 500, 200);
-	//glTexCoord2d(0.0, 0.0); glVertex3d(500, 500, 0);
-	//glTexCoord2d(1.0, 0.0); glVertex3d(500, -500, 0);
-
-	//glTexCoord2d(1.0, 1.0); glVertex3d(500, 500, 200);
-	//glTexCoord2d(0.0, 1.0); glVertex3d(-500, 500, 200);
-	//glTexCoord2d(0.0, 0.0); glVertex3d(-500, 500, 0);
-	//glTexCoord2d(1.0, 0.0); glVertex3d(500, 500, 0);
-
-	//glTexCoord2d(1.0, 1.0); glVertex3d(-500, 500, 200);
-	//glTexCoord2d(0.0, 1.0); glVertex3d(-500, -500, 200);
-	//glTexCoord2d(0.0, 0.0); glVertex3d(-500, -500, 0);
-	//glTexCoord2d(1.0, 0.0); glVertex3d(-500, 500, 0);
-
-	//glTexCoord2d(1.0, 1.0); glVertex3d(-500, -500, 200);
-	//glTexCoord2d(0.0, 1.0); glVertex3d(500, -500, 200);
-	//glTexCoord2d(0.0, 0.0); glVertex3d(500, -500, 0);
-	//glTexCoord2d(1.0, 0.0); glVertex3d(-500, -500, 0);
-	//glEnd();
-
-	//glDisable(GL_TEXTURE_2D); // Wy³¹cz teksturowanie
-
+	glPushMatrix();
+	glTranslatef(xMove, yMove, -25.0f);
 
 	//Sposób na odróŸnienie "przedniej" i "tylniej" œciany wielok¹ta:
 	glPolygonMode(GL_BACK, GL_LINE);
 	glScalef(zoom, zoom, zoom);
-
 	szachownica(2000, 2000);
+	glTranslatef(-154, 0, 0);
+	glTranslatef(PosX + 100, PosY + 50, 0);
 		glPushMatrix();
-		glTranslatef(-154, 0, 0);
 		glRotatef(skret, 0, 0, 1);
-		glTranslatef(ruchCzolg, /*20 * sin(skret)*/ 0, 0);
 		kadlub();
-		kolpak(-44);
-		kolpak(44);
 		blachaBoczna(-76.5);
 		blachaBoczna(76.5);
 		ukladGasienicowy();
@@ -1439,40 +1326,33 @@ void RenderScene(void)
 			glRotatef(obrotKoloLewe, 0, 1, 0);
 			kolo(-1);
 		glPopMatrix();
-			glPushMatrix();
+		glPushMatrix();
 			glTranslatef(130, -18, -28);
 			glRotatef(34, 0, 1, 0);
 			wydech(8, 3, 40, 50);
 			glTranslatef(0, 36, 0);
 			wydech(8, 3, 40, 50);
+		glPopMatrix();
+		glPushMatrix();
+			glRotatef(obrotWieza, 0, 0, 1);
+			wieza();
+			wlaz();
+			jarzmo();
+			glPushMatrix();
+				glTranslatef(-31, 0, 27.5);
+				glRotatef(ruchLufa, 0, 1, 0);
+				lufa();
 			glPopMatrix();
-		glPushMatrix();
-		glRotatef(obrotWieza, 0, 0, 1);
-		wieza();
-		wlaz();
-		jarzmo();
-		glPushMatrix();
-			glTranslatef(-31, 0, 27.5);
-			glRotatef(ruchLufa, 0, 1, 0);
-			lufa();
 		glPopMatrix();
 		glPopMatrix();
 	glPopMatrix();
 	glPopMatrix();
-	//Uzyskanie siatki:
-	//glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-
-	//Wyrysowanie prostokata:
-	//glRectd(-10.0,-10.0,20.0,20.0);
 
 	TwDraw();
-	/////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////
 	glMatrixMode(GL_MODELVIEW);
+
 	// Flush drawing commands
 	glFlush();
-	//glutSwapBuffers();
 }
 
 
@@ -1680,26 +1560,9 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		SetupRC();
 		glGenTextures(20, &texture[0]);                  // tworzy obiekt tekstury			
 
-		// ³aduje pierwszy obraz tekstury:
-		bitmapData = LoadBitmapFile("objects/ambush_pattern.bmp", &bitmapInfoHeader);
-		
-		glBindTexture(GL_TEXTURE_2D, texture[0]);       // aktywuje obiekt tekstury
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-
-		// tworzy obraz tekstury
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bitmapInfoHeader.biWidth,
-			bitmapInfoHeader.biHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, bitmapData);
-
-		if (bitmapData)
-			free(bitmapData);
 
 		// ³aduje drugi obraz tekstury:
-		bitmapData = LoadBitmapFile("objects/szary.bmp", &bitmapInfoHeader);
+		bitmapData = LoadBitmapFile("objects/wieza_bok_prawo.bmp", &bitmapInfoHeader);
 		glBindTexture(GL_TEXTURE_2D, texture[1]);       // aktywuje obiekt tekstury
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -1733,7 +1596,7 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 			free(bitmapData);
 
 		// ³aduje czwarty obraz tekstury:
-		bitmapData = LoadBitmapFile("objects/metal.bmp", &bitmapInfoHeader);
+		bitmapData = LoadBitmapFile("objects/wieza_góra.bmp", &bitmapInfoHeader);
 		glBindTexture(GL_TEXTURE_2D, texture[3]);       // aktywuje obiekt tekstury
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -1750,7 +1613,7 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 			free(bitmapData);
 
 		// ³aduje pi¹ty obraz tekstury:
-		bitmapData = LoadBitmapFile("objects/kamo.bmp", &bitmapInfoHeader);
+		bitmapData = LoadBitmapFile("objects/wieza_ty³.bmp", &bitmapInfoHeader);
 		glBindTexture(GL_TEXTURE_2D, texture[4]);       // aktywuje obiekt tekstury
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -1767,7 +1630,7 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 			free(bitmapData);
 
 		// ³aduje pi¹ty obraz tekstury:
-		bitmapData = LoadBitmapFile("objects/kamo_zmniejszone.bmp", &bitmapInfoHeader);
+		bitmapData = LoadBitmapFile("objects/przód_dó³.bmp", &bitmapInfoHeader);
 		glBindTexture(GL_TEXTURE_2D, texture[5]);       // aktywuje obiekt tekstury
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -1784,7 +1647,7 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 			free(bitmapData);
 
 		// ³aduje szósty obraz tekstury:
-		bitmapData = LoadBitmapFile("objects/lufa.bmp", &bitmapInfoHeader);
+		bitmapData = LoadBitmapFile("objects/przód_góra.bmp", &bitmapInfoHeader);
 		glBindTexture(GL_TEXTURE_2D, texture[6]);       // aktywuje obiekt tekstury
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -1818,7 +1681,7 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 			free(bitmapData);
 
 		// ³aduje ósmy obraz tekstury:
-		bitmapData = LoadBitmapFile("objects/tracks.bmp", &bitmapInfoHeader);
+		bitmapData = LoadBitmapFile("objects/track.bmp", &bitmapInfoHeader);
 		glBindTexture(GL_TEXTURE_2D, texture[8]);       // aktywuje obiekt tekstury
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -1869,7 +1732,7 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 			free(bitmapData);
 
 		// ³aduje dziesi¹ty obraz tekstury:
-		bitmapData = LoadBitmapFile("objects/piasek.bmp", &bitmapInfoHeader);
+		bitmapData = LoadBitmapFile("objects/ground.bmp", &bitmapInfoHeader);
 		glBindTexture(GL_TEXTURE_2D, texture[11]);       // aktywuje obiekt tekstury
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -1885,6 +1748,90 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		if (bitmapData)
 			free(bitmapData);
 
+		// ³aduje dziesi¹ty obraz tekstury:
+		bitmapData = LoadBitmapFile("objects/boczny_lewy_ca³y.bmp", &bitmapInfoHeader);
+		glBindTexture(GL_TEXTURE_2D, texture[12]);       // aktywuje obiekt tekstury
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+		// tworzy obraz tekstury
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bitmapInfoHeader.biWidth,
+			bitmapInfoHeader.biHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, bitmapData);
+
+		if (bitmapData)
+			free(bitmapData);
+
+		// ³aduje dziesi¹ty obraz tekstury:
+		bitmapData = LoadBitmapFile("objects/boczny_prawy_ca³oœæ.bmp", &bitmapInfoHeader);
+		glBindTexture(GL_TEXTURE_2D, texture[13]);       // aktywuje obiekt tekstury
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+		// tworzy obraz tekstury
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bitmapInfoHeader.biWidth,
+			bitmapInfoHeader.biHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, bitmapData);
+
+		if (bitmapData)
+			free(bitmapData);
+
+		// ³aduje dziesi¹ty obraz tekstury:
+		bitmapData = LoadBitmapFile("objects/silnik_gora.bmp", &bitmapInfoHeader);
+		glBindTexture(GL_TEXTURE_2D, texture[14]);       // aktywuje obiekt tekstury
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+		// tworzy obraz tekstury
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bitmapInfoHeader.biWidth,
+			bitmapInfoHeader.biHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, bitmapData);
+
+		if (bitmapData)
+			free(bitmapData);
+
+		// ³aduje dziesi¹ty obraz tekstury:
+		bitmapData = LoadBitmapFile("objects/kad³ub_góra.bmp", &bitmapInfoHeader);
+		glBindTexture(GL_TEXTURE_2D, texture[15]);       // aktywuje obiekt tekstury
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+		// tworzy obraz tekstury
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bitmapInfoHeader.biWidth,
+			bitmapInfoHeader.biHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, bitmapData);
+
+		if (bitmapData)
+			free(bitmapData);
+
+		// ³aduje dziesi¹ty obraz tekstury:
+		bitmapData = LoadBitmapFile("objects/boczny_dodatkowy_prawo.bmp", &bitmapInfoHeader);
+		glBindTexture(GL_TEXTURE_2D, texture[16]);       // aktywuje obiekt tekstury
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+		// tworzy obraz tekstury
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bitmapInfoHeader.biWidth,
+			bitmapInfoHeader.biHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, bitmapData);
+
+		if (bitmapData)
+			free(bitmapData);
 
 		// ustalenie sposobu mieszania tekstury z t³em
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -1971,20 +1918,51 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		}
 		break;
 
-		// Key press, check for arrow keys to do cube rotation.
 	case WM_KEYDOWN:
 	{
 		if (wParam == VK_UP)
-			xRot -= 3.0f;
+		{
+			if (yRot > 0.0f)
+			{
+				xMove -= 10.0f * sinus[(int)yRot / 10];
+				yMove -= 10.0f * cosinus[(int)yRot / 10];
+			}
+			else if (yRot < 0.0f)
+			{
+				xMove += 10.0f * (-sinus[(int)yRot / 10 + 36]);
+				yMove += 10.0f * (-cosinus[(int)yRot / 10 + 36]);
+			}
+		}
 
 		if (wParam == VK_DOWN)
-			xRot += 3.0f;
+		{
+			if (yRot > 0.0f)
+			{
+				xMove += 10.0f * sinus[(int)yRot / 10];
+				yMove += 10.0f * cosinus[(int)yRot / 10];
+			}
+			else if (yRot < 0.0f)
+			{
+				xMove -= 10.0f * (-sinus[(int)yRot / 10 + 36]);
+				yMove -= 10.0f * (-cosinus[(int)yRot / 10 + 36]);
+			}
+		}
 
 		if (wParam == VK_LEFT)
-			yRot -= 3.0f;
+		{
+			yRot -= 10.0f;
+		}
 
 		if (wParam == VK_RIGHT)
-			yRot += 3.0f;
+		{
+			yRot += 10.0f;
+		}
+
+		if (wParam == VK_NUMPAD8)
+			xRot -= 1.0f;
+
+		if (wParam == VK_NUMPAD5)
+			xRot += 1.0f;
 
 		if (wParam == VK_F1)
 		{
@@ -2031,65 +2009,70 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 				ruchLufa -= 1.0f;
 		}
 
-		if (wParam == 'Q')
-		{
-			skret += 3.14 / 16;
-			ruchCzolg -= 3.0f;
-			obrotKoloLewe += 1.0f;
-			obrotKoloPrawe += 3.0f;
-		}
-
-		if (wParam == 'E')
-		{
-			skret -= 3.14 / 16;
-			ruchCzolg -= 3.0f;
-			obrotKoloLewe += 3.0f;
-			obrotKoloPrawe += 1.0f;
-		}
-
-
-		if (wParam == 'Z')
-		{
-			skret -= 3.14 / 16;
-			ruchCzolg += 3.0f;
-			obrotKoloLewe -= 1.0f;
-			obrotKoloPrawe -= 3.0f;
-		}
-
-		if (wParam == 'C')
-		{
-			skret += 3.14 / 16;
-			ruchCzolg += 3.0f;
-			obrotKoloLewe -= 3.0f;
-			obrotKoloPrawe -= 1.0f;
-		}
-
 		if (wParam == 'A')
 		{
-			skret += 3.14 / 16;
+			skret += 10;
 			obrotKoloLewe -= 2.0f;
 			obrotKoloPrawe += 2.0f;
+			color += 1;
+			freq = 4;
 		}
 
 		if (wParam == 'D')
 		{
-			skret -= 3.14 / 16;
+			skret -= 10;
 			obrotKoloLewe += 2.0f;
 			obrotKoloPrawe -= 2.0f;
+			color += 1;
+			freq = 4;
 		}
 
 		if (wParam == 'W')
 		{
-			ruchCzolg -= 3.0f;
+			if (skret == 0 || skret == 180)
+			{
+				PosX -= 3.0f * cosinus[(int)skret / 10];
+				PosY -= 3.0f * sinus[(int)skret / 10];
+			}
+			else if(skret > 0.0f)
+			{
+				PosX -= 3.0f * cosinus[(int)skret / 10];
+				PosY -= 3.0f * sinus[(int)skret / 10];
+			}
+			else if(skret < 0.0f)
+			{
+				PosX += 3.0f * (-cosinus[(int)skret / 10 + 36]);
+				PosY += 3.0f * (-sinus[(int)skret / 10 + 36]);
+			}
+
 			obrotKoloLewe += 3.0f;
 			obrotKoloPrawe -= 3.0f;
+			color += 1;
+			freq = 2;
 		}
 
 		if (wParam == 'X')
 		{
-			ruchCzolg += 3.0f;
+			if (skret == 0 || skret == 180)
+			{
+				PosX += 3.0f * cosinus[(int)skret / 10];
+				PosY += 3.0f * sinus[(int)skret / 10];
+			}
+			else if (skret > 0.0f)
+			{
+				PosX += 3.0f * cosinus[(int)skret / 10];
+				PosY += 3.0f * sinus[(int)skret / 10];
+			}
+			else if (skret < 0.0f)
+			{
+				PosX -= 3.0f * (-cosinus[(int)skret / 10 + 36]);
+				PosY -= 3.0f * (-sinus[(int)skret / 10 + 36]);
+			}
+
 			obrotKoloLewe -= 3.0f;
 			obrotKoloPrawe += 3.0f;
+			color += 1;
+			freq = 2;
 		}
 
 		if (wParam == VK_F8 && zoom >= 0.2)
@@ -2104,6 +2087,7 @@ LRESULT CALLBACK WndProc(HWND    hWnd,
 		xRot = (const int)xRot % 360;
 		yRot = (const int)yRot % 360;
 		obrotWieza = (const int)obrotWieza % 360;
+		skret = (const int)skret % 360;
 
 		InvalidateRect(hWnd, NULL, FALSE);
 	}

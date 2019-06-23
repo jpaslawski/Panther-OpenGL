@@ -1,43 +1,28 @@
 ﻿  GL_model.c
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(330): warning C4018: "<": niezgodność typu ze znakiem/bez znaku
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(353): warning C4244: "funkcja": konwersja z "int" do "GLfloat", możliwa utrata danych
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(790): warning C4101: "z2": lokalna zmienna, do której nie istnieje odwołanie
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(790): warning C4101: "z3": lokalna zmienna, do której nie istnieje odwołanie
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(790): warning C4101: "x3": lokalna zmienna, do której nie istnieje odwołanie
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(790): warning C4101: "x2": lokalna zmienna, do której nie istnieje odwołanie
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(853): warning C4244: "funkcja": konwersja z "double" do "float", możliwa utrata danych
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(859): warning C4244: "funkcja": konwersja z "double" do "float", możliwa utrata danych
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(864): warning C4244: "funkcja": konwersja z "double" do "float", możliwa utrata danych
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(878): warning C4305: "=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(879): warning C4305: "=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(894): warning C4305: "-=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(898): warning C4305: "-=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(902): warning C4305: "+=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(906): warning C4305: "+=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(871): warning C4305: "inicjowanie": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(927): warning C4305: "=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(928): warning C4305: "=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(947): warning C4305: "+=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(957): warning C4305: "=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(958): warning C4305: "=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(960): warning C4244: "=": konwersja z "double" do "float", możliwa utrata danych
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(961): warning C4244: "=": konwersja z "double" do "float", możliwa utrata danych
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(980): warning C4305: "=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(981): warning C4305: "=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(983): warning C4244: "=": konwersja z "double" do "float", możliwa utrata danych
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(984): warning C4244: "=": konwersja z "double" do "float", możliwa utrata danych
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(916): warning C4305: "inicjowanie": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(916): warning C4101: "z_next": lokalna zmienna, do której nie istnieje odwołanie
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(916): warning C4101: "x_next": lokalna zmienna, do której nie istnieje odwołanie
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(1703): warning C4305: "+=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(1709): warning C4305: "-=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(1716): warning C4305: "-=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(1722): warning C4305: "+=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(1728): warning C4305: "-=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(1733): warning C4305: "+=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(1748): warning C4305: "-=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(1753): warning C4305: "+=": obcięcie z "double" do "float"
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(1755): warning C4244: "=": konwersja z "int" do "GLfloat", możliwa utrata danych
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(1756): warning C4244: "=": konwersja z "int" do "GLfloat", możliwa utrata danych
-c:\users\pasla\desktop\materiały prz\panther\gl_model.c(1757): warning C4244: "=": konwersja z "int" do "float", możliwa utrata danych
+c:\users\pasla\desktop\materiały prz\panther\include\miniglut.h(130): warning C4273: "exit": niespójne powiązanie biblioteki dll
+  c:\program files (x86)\windows kits\10\include\10.0.17763.0\ucrt\stdlib.h(52): note: zobacz poprzednią definicję „exit”
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(94): warning C4305: "inicjowanie": obcięcie z "double" do "float"
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(96): warning C4305: "inicjowanie": obcięcie z "double" do "float"
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(214): warning C4013: niezdefiniowany "time"; przy założeniu, że extern zwraca int
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(321): warning C4018: "<": niezgodność typu ze znakiem/bez znaku
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(633): warning C4550: wyrażenie daje w wyniku funkcję, której brakuje listy argumentów
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(950): warning C4244: "funkcja": konwersja z "double" do "float", możliwa utrata danych
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(958): warning C4244: "funkcja": konwersja z "double" do "float", możliwa utrata danych
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(989): warning C4305: "-=": obcięcie z "double" do "float"
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(993): warning C4305: "-=": obcięcie z "double" do "float"
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(997): warning C4305: "+=": obcięcie z "double" do "float"
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(1001): warning C4305: "+=": obcięcie z "double" do "float"
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(1043): warning C4305: "+=": obcięcie z "double" do "float"
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(1057): warning C4244: "=": konwersja z "double" do "float", możliwa utrata danych
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(1058): warning C4244: "=": konwersja z "double" do "float", możliwa utrata danych
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(1081): warning C4244: "=": konwersja z "double" do "float", możliwa utrata danych
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(1082): warning C4244: "=": konwersja z "double" do "float", możliwa utrata danych
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(1011): warning C4101: "z_next": lokalna zmienna, do której nie istnieje odwołanie
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(1011): warning C4101: "x_next": lokalna zmienna, do której nie istnieje odwołanie
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(2080): warning C4305: "-=": obcięcie z "double" do "GLfloat"
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(2085): warning C4305: "+=": obcięcie z "double" do "GLfloat"
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(2087): warning C4244: "=": konwersja z "int" do "GLfloat", możliwa utrata danych
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(2088): warning C4244: "=": konwersja z "int" do "GLfloat", możliwa utrata danych
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(2089): warning C4244: "=": konwersja z "int" do "GLfloat", możliwa utrata danych
+c:\users\pasla\desktop\materiały prz\panther\gl_model.c(2090): warning C4244: "=": konwersja z "int" do "GLfloat", możliwa utrata danych
   Panther.vcxproj -> C:\Users\pasla\Desktop\Materiały PRZ\Panther\Debug\Panther.exe
